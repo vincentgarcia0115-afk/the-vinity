@@ -5,13 +5,15 @@ const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat('en-PH', {
   style: 'currency', currency: 'PHP', maximumFractionDigits: 0
 }).format(value);
-const products = new Map(catalog.map(([id, name, family, inspiration, hints]) => [id, {id, name, family, inspiration, hints}]));
+const products = new Map(catalog.map(([id, name, family, inspiration, hints, collection]) => [id, {id, name, family, inspiration, hints, collection}]));
 const families = ['Floral', 'Fresh', 'Fruity', 'Sweet', 'Warm', 'Other'];
 const drawer = $('#bag-dialog');
+const productDialog = $('#product-dialog');
 const content = $('#drawer-content');
 const bag = new Map();
 const details = {name:'', phone:'', address:''};
 let selected = 'All scents';
+let selectedCollection = 'All perfumes';
 let stage = 'bag';
 let noticeTimer;
 
@@ -48,22 +50,63 @@ function changeQuantity(id, change) {
   updateCount();
 }
 
+function scentDetails({inspiration, hints}) {
+  return `<p class="inspiration">${inspiration ? 'Inspired by ' + inspiration : 'Inspiration unlisted'}</p>
+    <p class="scent-label">Scent hints</p>
+    ${hints.length ? `<ul class="scent-list" aria-label="Scent hints">${hints.map((hint) => `<li>${hint}</li>`).join('')}</ul>` : '<p class="inspiration">Unlisted</p>'}`;
+}
+
+function addButton({id, name}) {
+  return `<button type="button" data-add="${id}" aria-label="Add ${name} to bag">Add to bag</button>`;
+}
+
 function renderProducts() {
   const query = $('#search').value.trim().toLowerCase();
-  const shown = [...products.values()].filter(({name, family, inspiration, hints}) =>
+  const shown = [...products.values()].filter(({name, family, inspiration, hints, collection}) =>
+    (selectedCollection === 'All perfumes' || selectedCollection === collection) &&
     (selected === 'All scents' || selected === family) &&
     [name, family, inspiration, ...hints].some((value) => value.toLowerCase().includes(query))
   );
   $('#result-count').textContent = shown.length + (shown.length === 1 ? ' perfume' : ' perfumes');
-  $('#products').innerHTML = shown.map(({id, name, family, inspiration, hints}, index) =>
-    `<article class="card"><div class="card-image">
-      <img src="assets/${id}.svg" alt="${name} perfume bottle" ${index > 7 ? 'loading="lazy"' : ''}>
-    </div><div class="card-body"><p class="family">${family}</p><h3>${name}</h3>
-    <p class="inspiration">${inspiration ? 'Inspired by ' + inspiration : 'Inspiration unlisted'}</p>
-    <p class="scent-label">Scent hints</p>
-    ${hints.length ? `<ul class="scent-list" aria-label="Scent hints">${hints.map((hint) => `<li>${hint}</li>`).join('')}</ul>` : '<p class="inspiration">Unlisted</p>'}
-    <div class="card-bottom"><strong>${money(price)}</strong><button type="button" data-add="${id}" aria-label="Add ${name} to bag">Add to bag</button></div></div></article>`
-  ).join('') || '<p class="empty">No perfumes match your search. Try another name or scent family.</p>';
+
+  $('#products').innerHTML = ['For Her', 'For Him'].map((collection) => {
+    const group = shown.filter((product) => product.collection === collection);
+    if (!group.length) return '';
+    const heading = collection === 'For Him' ? 'for-him' : 'for-her';
+    const cards = group.map((product) => {
+      const {id, name, family} = product;
+      return `<article class="card"><button class="card-image" type="button" data-details="${id}" aria-label="View details for ${name}">
+        <img src="assets/${id}.svg" alt="" loading="lazy">
+        <span>View details <span aria-hidden="true">↗</span></span>
+      </button><div class="card-body"><p class="family">${family}</p><h3>${name}</h3>
+      ${scentDetails(product)}
+      <div class="card-bottom"><strong>${money(price)}</strong>${addButton(product)}</div></div></article>`;
+    }).join('');
+    return `<section class="catalog-group" aria-labelledby="${heading}"><h3 class="group-heading" id="${heading}">${collection}</h3><div class="grid">${cards}</div></section>`;
+  }).join('') || '<p class="empty">No perfumes match these filters. Try another search or collection.</p>';
+}
+
+function showProduct(product) {
+  const {id, name, family, collection} = product;
+  $('#product-details').innerHTML = `<div class="product-photo"><img src="assets/${id}.svg" alt="${name} perfume bottle"></div>
+    <div class="product-copy"><p class="family">${collection} · ${family}</p>
+    <h2 id="product-title">${name}</h2>${scentDetails(product)}
+    <div class="card-bottom"><strong>${money(price)}</strong>${addButton(product)}</div>
+    <p id="product-feedback" role="status"></p></div>`;
+  productDialog.showModal();
+}
+
+function addToBag(id) {
+  const feedback = productDialog.open ? $('#product-feedback') : null;
+  if (bag.get(id) === 99) {
+    const message = 'You can add up to 99 of this perfume.';
+    if (feedback) feedback.textContent = message;
+    else announce(message);
+    return;
+  }
+  changeQuantity(id, 1);
+  if (productDialog.open) productDialog.close();
+  announce(products.get(id).name + ' added to your bag.');
 }
 
 function subtotal() {
@@ -142,16 +185,24 @@ $('#filters').addEventListener('click', (event) => {
   renderProducts();
 });
 $('#search').addEventListener('input', renderProducts);
-$('#products').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-add]');
+$('.collection-switch').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-collection]');
   if (!button) return;
-  const id = Number(button.dataset.add);
-  if (bag.get(id) === 99) {
-    announce('You can add up to 99 of this perfume.');
-    return;
-  }
-  changeQuantity(id, 1);
-  announce(products.get(id).name + ' added to your bag.');
+  selectedCollection = button.dataset.collection;
+  for (const option of $('.collection-switch').children) option.setAttribute('aria-pressed', option === button);
+  renderProducts();
+});
+$('#products').addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  if (button.dataset.details) showProduct(products.get(Number(button.dataset.details)));
+  else if (button.dataset.add) addToBag(Number(button.dataset.add));
+});
+$('#close-product').addEventListener('click', () => productDialog.close());
+productDialog.addEventListener('click', (event) => {
+  if (event.target === productDialog) productDialog.close();
+  const button = event.target.closest('[data-add]');
+  if (button) addToBag(Number(button.dataset.add));
 });
 $('#open-bag').addEventListener('click', () => {
   renderBag();

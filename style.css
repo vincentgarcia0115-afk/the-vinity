@@ -92,3 +92,35 @@ footer { border-top: 1px solid var(--line); }
 
 dialog{position:fixed;inset:0 0 0 auto;margin:0;width:min(100%,460px);max-width:none;height:100%;max-height:none;border:0;background:var(--paper);color:var(--ink);padding:22px;box-shadow:-12px 0 50px #281b2038;overflow:auto}dialog::backdrop{background:#27151f75}body:has(dialog[open]){overflow:hidden}.drawer-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.drawer-header .eyebrow{margin-bottom:2px}.drawer-header h2{font-size:39px;line-height:1;margin:0}.icon-button{min-width:37px;min-height:37px;font-size:22px}.order-row{padding:12px 0;border-bottom:1px solid var(--line)}.line-name{flex:1}.stepper{display:flex;align-items:center;gap:7px}.stepper button{min-width:34px;min-height:34px;border-radius:5px;border:1px solid var(--line);background:white;color:var(--ink)}.subtotal{margin:16px 0;font-weight:750}.checkout{display:grid;gap:11px}.checkout label{display:grid;gap:3px;font-weight:600}.checkout input,.checkout textarea{width:100%;padding:8px 10px;border:1px solid #bcbcbc;border-radius:4px;background:white;color:var(--ink)}.checkout textarea{resize:vertical;min-height:75px}.checkout p,.order-note{color:var(--muted);margin:0 0 8px}.secondary{border:1px solid var(--line);border-radius:4px;padding:8px 11px;color:var(--wine);background:white}.actions{display:flex;gap:8px;flex-wrap:wrap}.notice{position:fixed;z-index:8;bottom:16px;left:50%;transform:translateX(-50%);border-radius:6px;background:var(--ink);color:white;padding:10px 16px;pointer-events:none;text-align:center}.notice:empty{display:none}.order-text{white-space:pre-wrap;overflow-wrap:anywhere;background:white;border:1px solid var(--line);padding:12px;font:inherit}
 
+
+.collection-switch { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.collection-switch .filter { font-weight: 700; min-height: 43px; padding-inline: 16px; }
+.catalog-group + .catalog-group { margin-top: 42px; }
+.group-heading { margin: 0 0 13px; font-size: clamp(23px, 3vw, 32px); letter-spacing: -.035em; }
+.card-image { display: block; width: 100%; border: 0; background: #fff; color: var(--ink); }
+.card-image > span { position: absolute; right: 9px; bottom: 6px; font-size: 11px; padding: 3px 6px; background: #fff; color: var(--muted); }
+.card-image:focus-visible { outline-offset: -3px; }
+#product-dialog { inset: 0; margin: auto; width: min(680px, calc(100% - 28px)); height: fit-content; max-height: calc(100% - 28px); padding: 0; }
+.product-panel { position: relative; padding: clamp(18px, 4vw, 33px); }
+#close-product { position: absolute; top: 10px; right: 10px; z-index: 1; }
+#product-details { display: grid; grid-template-columns: .85fr 1fr; gap: 20px; align-items: center; }
+.product-photo { display: grid; place-items: center; }
+.product-photo img { display: block; width: 78%; height: min(42vh, 310px); object-fit: contain; filter: drop-shadow(10px 8px 2px #0004); }
+.product-copy h2 { margin: 0 0 8px; font-size: clamp(24px, 4vw, 36px); line-height: 1.1; letter-spacing: -.04em; }
+.product-copy .scent-list { justify-content: flex-start; }
+#product-feedback { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+#product-feedback:empty { display: none; }
+@media (max-width: 520px) {
+  #product-details { grid-template-columns: 1fr; gap: 13px; }
+  .product-photo img { height: min(27vh, 190px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .intro, #hero-art { animation: vinity-enter 460ms ease-out both; }
+  #hero-art { animation-delay: 70ms; }
+  .card-image img { transition: transform 180ms ease-out; }
+  .card-image:hover img, .card-image:focus-visible img { transform: translateY(-5px); }
+  #product-dialog[open] { animation: vinity-enter 200ms ease-out both; }
+  #bag-dialog[open] { animation: vinity-slide 210ms ease-out both; }
+}
+@keyframes vinity-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes vinity-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }

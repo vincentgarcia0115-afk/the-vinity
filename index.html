@@ -18,14 +18,25 @@
 </section>
 <section id="collection" class="wrap collection" aria-labelledby="collection-title">
 <div class="collection-head"><div><p class="eyebrow"><span></span> EXPLORE THE SCENTS</p><h2 id="collection-title">Shop the collection</h2></div><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input id="search" type="search" aria-label="Search perfumes" placeholder="Search perfumes or scents"></label></div>
+<div class="collection-switch" role="group" aria-label="Shop by collection">
+<button class="filter" type="button" data-collection="All perfumes" aria-pressed="true">All perfumes</button>
+<button class="filter" type="button" data-collection="For Him" aria-pressed="false">For Him</button>
+<button class="filter" type="button" data-collection="For Her" aria-pressed="false">For Her</button>
+</div>
 <div class="tools"><div id="filters" aria-label="Filter by scent family"></div><span id="result-count" aria-live="polite"></span></div>
-<div class="grid" id="products"></div>
+<div id="products"></div>
 </section>
 </main>
 <footer><div class="wrap footer"><a class="brand" href="#">The Vinity</a><span>Perfume shop</span><a href="#collection">Back to collection ↑</a></div></footer>
 <dialog id="bag-dialog" aria-labelledby="bag-title">
 <header class="drawer-header"><div><p class="eyebrow">THE VINITY</p><h2 id="bag-title">Your bag</h2></div><button type="button" id="close-bag" class="icon-button" aria-label="Close bag">×</button></header>
 <div id="drawer-content"></div>
+</dialog>
+<dialog id="product-dialog" aria-labelledby="product-title">
+<div class="product-panel">
+<button type="button" id="close-product" class="icon-button" aria-label="Close product details" autofocus>×</button>
+<div id="product-details"></div>
+</div>
 </dialog>
 <div id="notice" class="notice" role="status"></div>
 </body>
