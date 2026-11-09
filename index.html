@@ -7,9 +7,9 @@
 <meta name="theme-color" content="#fbf7f2">
 <title>The Vinity | Perfume shop</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&amp;family=Fraunces:opsz,wght@9..144,400..600&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=shop">
+<link rel="stylesheet" href="style.css?v=filters">
 <script src="catalog.js" defer></script>
-<script src="shop.js?v=edition" defer></script>
+<script src="shop.js?v=filters" defer></script>
 </head>
 <body id="home">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -49,12 +49,24 @@
       <p>Search by fragrance, scent note, or inspiration.</p>
       <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input id="search" type="search" aria-label="Search perfumes" placeholder="Search perfumes or scents"></label>
     </div>
-    <div class="collection-switch" role="group" aria-label="Shop by collection">
-      <button class="filter" type="button" data-collection="All perfumes" aria-pressed="true">All perfumes</button>
-      <button class="filter" type="button" data-collection="For Him" aria-pressed="false">For Him</button>
-      <button class="filter" type="button" data-collection="For Her" aria-pressed="false">For Her</button>
+    <div class="catalog-filters">
+      <div class="filter-group" role="group" aria-labelledby="collection-filter-label">
+        <span class="filter-label" id="collection-filter-label">Collection</span>
+        <div class="collection-switch">
+          <button class="filter" type="button" data-collection="All perfumes" aria-pressed="true">All perfumes</button>
+          <button class="filter" type="button" data-collection="For Him" aria-pressed="false">For Him</button>
+          <button class="filter" type="button" data-collection="For Her" aria-pressed="false">For Her</button>
+        </div>
+      </div>
+      <div class="filter-group" role="group" aria-labelledby="scent-filter-label">
+        <span class="filter-label" id="scent-filter-label">Scent family</span>
+        <div id="filters"></div>
+      </div>
+      <div class="filter-summary">
+        <span id="result-count" aria-live="polite"></span>
+        <button id="clear-filters" type="button" aria-label="Clear search and filters" disabled>Clear all</button>
+      </div>
     </div>
-    <div class="tools"><div id="filters" aria-label="Filter by scent family"></div><span id="result-count" aria-live="polite"></span></div>
     <div id="products"></div>
   </section>
   <section id="ordering" class="ordering" aria-labelledby="ordering-title">

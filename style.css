@@ -60,12 +60,33 @@ svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width:
 .search input { width: 100%; min-width: 0; border: 0; background: transparent; color: var(--ink); min-height: 44px; }
 .search:focus-within { outline: 2px solid #8e4c72; outline-offset: 2px; }
 .search input:focus { outline: 0; }
-.collection-switch,.tools,#filters { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
-.collection-switch { margin-block: 16px 9px; }
-.tools { justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 15px; }
-#result-count,.group-header > span { color: var(--muted); font-size: 13px; }
+.catalog-filters {
+  display: grid;
+  gap: 12px;
+  margin-top: 15px;
+  padding: 14px 16px 4px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.filter-group { display: grid; grid-template-columns: 100px minmax(0,1fr); align-items: center; gap: 10px; }
+.filter-label { color: var(--muted); font-size: 13px; font-weight: 700; }
+.collection-switch,#filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.collection-switch { justify-self: start; padding: 3px; background: var(--soft); border-radius: 10px; }
 .filter { font-size: 13px; }
-.filter[aria-pressed=true] { background: var(--soft); border-color: var(--accent); color: var(--accent); }
+.collection-switch .filter { border-color: transparent; background: transparent; }
+#filters .filter { border-radius: 24px; }
+.catalog-filters .filter[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: white; }
+.catalog-filters .filter:hover:not([aria-pressed=true]) { border-color: var(--accent); }
+.filter-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
+#result-count,.group-header > span { color: var(--muted); font-size: 13px; }
+#clear-filters { min-height: 44px; padding-inline: 6px; border: 0; background: transparent; color: var(--accent); font-weight: 650; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+#clear-filters:disabled { text-decoration: none; }
+@media (max-width: 540px) {
+  .catalog-filters { padding-inline: 10px; }
+  .filter-group { grid-template-columns: 1fr; gap: 5px; }
+  .catalog-filters .filter { padding-inline: 9px; }
+}
 .group-header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 23px 0 12px; }
 .group-heading { font-size: 27px; }
 .grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }

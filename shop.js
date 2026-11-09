@@ -74,6 +74,13 @@ function renderProducts() {
     (selected === 'All scents' || selected === family) &&
     [name, family, inspiration, ...hints].some((value) => value.toLowerCase().includes(query))
   );
+  for (const button of $('.collection-switch').children) {
+    button.setAttribute('aria-pressed', button.dataset.collection === selectedCollection);
+  }
+  for (const button of $('#filters').children) {
+    button.setAttribute('aria-pressed', button.dataset.scent === selected);
+  }
+  $('#clear-filters').disabled = !query && selected === 'All scents' && selectedCollection === 'All perfumes';
   $('#result-count').textContent = shown.length + (shown.length === 1 ? ' perfume' : ' perfumes');
 
   $('#products').innerHTML = ['For Her', 'For Him'].map((collection) => {
@@ -264,22 +271,22 @@ syncNavigation();
 $('.search-link').addEventListener('click', () => requestAnimationFrame(() => $('#search').focus({preventScroll:true})));
 
 $('#filters').innerHTML = ['All scents', ...families].map((family) =>
-  `<button class="filter" type="button" aria-pressed="${family === selected}">${family}</button>`
+  `<button class="filter" type="button" data-scent="${family}" aria-pressed="false">${family}</button>`
 ).join('');
-$('#filters').addEventListener('click', (event) => {
-  if (!event.target.matches('button')) return;
-  selected = event.target.textContent;
-  for (const button of $('#filters').children) button.setAttribute('aria-pressed', button === event.target);
+$('.catalog-filters').addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  if (button.dataset.scent) selected = button.dataset.scent;
+  else if (button.dataset.collection) selectedCollection = button.dataset.collection;
+  else if (button.id === 'clear-filters') {
+    selected = 'All scents';
+    selectedCollection = 'All perfumes';
+    $('#search').value = '';
+    $('#search').focus({preventScroll:true});
+  }
   renderProducts();
 });
 $('#search').addEventListener('input', renderProducts);
-$('.collection-switch').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-collection]');
-  if (!button) return;
-  selectedCollection = button.dataset.collection;
-  for (const option of $('.collection-switch').children) option.setAttribute('aria-pressed', option === button);
-  renderProducts();
-});
 $('#products').addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (!button) return;
