@@ -14,6 +14,8 @@ const bag = new Map();
 const details = {name:'', phone:'', address:''};
 let selected = 'All scents';
 let selectedCollection = 'All perfumes';
+const pageSize = 6;
+const visibleCounts = new Map();
 let stage = 'bag';
 let noticeTimer;
 
@@ -73,7 +75,8 @@ function renderProducts() {
     const group = shown.filter((product) => product.collection === collection);
     if (!group.length) return '';
     const heading = collection === 'For Him' ? 'for-him' : 'for-her';
-    const cards = group.map((product) => {
+    const limit = query ? group.length : visibleCounts.get(collection) ?? pageSize;
+    const cards = group.slice(0, limit).map((product) => {
       const {id, name, family} = product;
       return `<article class="card"><button class="card-image" type="button" data-details="${id}" aria-label="View details for ${name}">
         <img src="assets/${id}.svg" alt="" loading="lazy">
@@ -82,7 +85,11 @@ function renderProducts() {
       ${scentDetails(product)}
       <div class="card-bottom"><strong>${money(price)}</strong>${addButton(product)}</div></div></article>`;
     }).join('');
-    return `<section class="catalog-group" aria-labelledby="${heading}"><h3 class="group-heading" id="${heading}">${collection}</h3><div class="grid">${cards}</div></section>`;
+    const remaining = group.length - limit;
+    const more = remaining > 0 ? `<button class="secondary load-more" type="button" data-more="${collection}">Show more ${collection} <span aria-hidden="true">↓</span></button>` : '';
+    return `<section class="catalog-group" aria-labelledby="${heading}">
+      <div class="group-header"><h3 class="group-heading" id="${heading}">${collection}</h3><span>${group.length} perfumes</span></div>
+      <div class="grid">${cards}</div>${more}</section>`;
   }).join('') || '<p class="empty">No perfumes match these filters. Try another search or collection.</p>';
 }
 
@@ -174,7 +181,42 @@ function renderRequest() {
   content.querySelector('.actions').firstElementChild.focus();
 }
 
-$('#hero-art').innerHTML = [42, 11, 61].map((id) => `<img class="hero-bottle" src="assets/${id + '.svg'}" alt="">`).join('');
+const featured = [11, 42, 71, 32].map((id) => products.get(id));
+$('#featured-products').innerHTML = featured.map(({id, name, family}) =>
+  `<button class="featured-item" type="button" data-details="${id}" aria-label="View featured ${name}">
+    <span class="featured-photo"><img src="assets/${id}.svg" alt="" loading="lazy"></span>
+    <span class="family">${family}</span><strong>${name}</strong><span>${money(price)}</span>
+    <span class="featured-link">View perfume <span aria-hidden="true">→</span></span>
+  </button>`
+).join('');
+$('#featured-products').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-details]');
+  if (button) showProduct(products.get(Number(button.dataset.details)));
+});
+
+const navLinks = document.querySelectorAll('.nav-links a');
+function syncNavigation() {
+  const hash = location.hash || '#home';
+  for (const link of navLinks) {
+    if (link.hash === hash) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  }
+}
+window.addEventListener('hashchange', syncNavigation);
+syncNavigation();
+$('.search-link').addEventListener('click', () => requestAnimationFrame(() => $('#search').focus({preventScroll:true})));
+
+if (window.IntersectionObserver && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('revealed');
+      observer.unobserve(entry.target);
+    }
+  }, {threshold: .12});
+  document.querySelectorAll('[data-reveal]').forEach((element) => observer.observe(element));
+}
+
 $('#filters').innerHTML = ['All scents', ...families].map((family) =>
   `<button class="filter" type="button" aria-pressed="${family === selected}">${family}</button>`
 ).join('');
@@ -197,6 +239,14 @@ $('#products').addEventListener('click', (event) => {
   if (!button) return;
   if (button.dataset.details) showProduct(products.get(Number(button.dataset.details)));
   else if (button.dataset.add) addToBag(Number(button.dataset.add));
+  else if (button.dataset.more) {
+    const collection = button.dataset.more;
+    const limit = visibleCounts.get(collection) ?? pageSize;
+    visibleCounts.set(collection, limit + pageSize);
+    renderProducts();
+    const group = collection === 'For Him' ? '#for-him' : '#for-her';
+    $(group).closest('section').querySelectorAll('[data-details]')[limit]?.focus();
+  }
 });
 $('#close-product').addEventListener('click', () => productDialog.close());
 productDialog.addEventListener('click', (event) => {

@@ -3,40 +3,100 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Browse and order perfume from The Vinity.">
+<meta name="description" content="Explore The Vinity’s perfume collection, with every bottle at ₱250.">
+<meta name="theme-color" content="#f8f3ee">
 <title>The Vinity | Perfume shop</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=editorial">
 <script src="catalog.js" defer></script>
-<script src="shop.js" defer></script>
+<script src="shop.js?v=editorial" defer></script>
 </head>
-<body>
-<header class="header"><div class="wrap nav"><a class="brand" href="#">The Vinity</a><a class="nav-link" href="#collection">Collection</a><button id="open-bag" class="bag" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 13H4L5 8Zm4 1V6a3 3 0 0 1 6 0v3"/></svg> Bag <span id="count">0</span></button></div></header>
-<main>
-<section class="hero wrap">
-<div class="intro"><p class="eyebrow"><span></span> THE PERFUME SHOP</p><h1>Find your<br>signature scent.</h1><p class="intro-copy">Browse the scent hints and inspirations to find a perfume you’ll love. Every bottle is ₱250.</p><a class="primary" href="#collection">Shop the collection <span aria-hidden="true">↘</span></a></div>
-<div class="showcase" aria-hidden="true"><div id="hero-art"></div></div>
-</section>
-<section id="collection" class="wrap collection" aria-labelledby="collection-title">
-<div class="collection-head"><div><p class="eyebrow"><span></span> EXPLORE THE SCENTS</p><h2 id="collection-title">Shop the collection</h2></div><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input id="search" type="search" aria-label="Search perfumes" placeholder="Search perfumes or scents"></label></div>
-<div class="collection-switch" role="group" aria-label="Shop by collection">
-<button class="filter" type="button" data-collection="All perfumes" aria-pressed="true">All perfumes</button>
-<button class="filter" type="button" data-collection="For Him" aria-pressed="false">For Him</button>
-<button class="filter" type="button" data-collection="For Her" aria-pressed="false">For Her</button>
-</div>
-<div class="tools"><div id="filters" aria-label="Filter by scent family"></div><span id="result-count" aria-live="polite"></span></div>
-<div id="products"></div>
-</section>
+<body id="home">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="header"><div class="wrap nav">
+  <a class="brand" href="#home"><span aria-hidden="true">✦</span>The Vinity<small>PERFUME SHOP</small></a>
+  <nav class="nav-links" aria-label="Main navigation">
+    <a href="#home" aria-current="location">Home</a><a href="#about">About</a><a href="#collection">Collection</a><a href="#ordering">How to order</a>
+  </nav>
+  <div class="nav-actions">
+    <a class="search-link" href="#collection" aria-label="Search the collection"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></a>
+    <button id="open-bag" class="bag" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 13H4L5 8Zm4 1V6a3 3 0 0 1 6 0v3"/></svg> Bag <span id="count">0</span></button>
+  </div>
+</div></header>
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="intro">
+      <p class="eyebrow">THE VINITY FRAGRANCE COLLECTION</p>
+      <h1 id="hero-title">A scent to<br>make your own.</h1>
+      <p class="intro-copy">Find a new favorite by scent, mood, or fragrance inspiration. Every perfume is ₱250.</p>
+      <a class="primary" href="#collection">Discover the collection <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="hero-stage" aria-hidden="true">
+      <img class="hero-product" src="assets/11.svg" alt="" fetchpriority="high">
+      <span class="hero-caption"><span></span> Bomb Shell Beauty</span>
+    </div>
+  </section>
+  <section id="featured" class="wrap featured section-space" aria-labelledby="featured-title">
+    <div class="section-heading" data-reveal>
+      <p class="eyebrow">FROM THE COLLECTION</p>
+      <h2 id="featured-title">Find your signature scent</h2>
+      <p>Four fragrances to start with, from fresh and powdery to warm and sweet.</p>
+    </div>
+    <div id="featured-products" class="featured-grid" data-reveal></div>
+    <a class="text-link" href="#collection">Browse all perfumes <span aria-hidden="true">→</span></a>
+  </section>
+  <section id="about" class="story" aria-labelledby="about-title">
+    <div class="story-art" aria-hidden="true">
+      <img src="assets/61.svg" alt="" loading="lazy" data-reveal>
+      <img src="assets/71.svg" alt="" loading="lazy" data-reveal>
+      <span>THE VINITY / FRAGRANCE EDIT</span>
+    </div>
+    <div class="story-copy" data-reveal>
+      <p class="eyebrow">ABOUT THE VINITY</p>
+      <h2 id="about-title">A little more personal</h2>
+      <p>Some days call for a light, fresh scent. Other days feel right for something warm and sweet. The Vinity lets you browse both by scent hints and the fragrances that inspired them.</p>
+      <a href="#collection" class="text-link">Explore For Her and For Him <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+  <section id="collection" class="wrap collection section-space" aria-labelledby="collection-title">
+    <div class="collection-head section-heading" data-reveal>
+      <p class="eyebrow">THE PERFUME SHOP</p>
+      <h2 id="collection-title">Shop the collection</h2>
+      <p>Explore 77 perfumes and open any bottle for its details.</p>
+      <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input id="search" type="search" aria-label="Search perfumes" placeholder="Search perfumes or scents"></label>
+    </div>
+    <div class="collection-switch" role="group" aria-label="Shop by collection">
+      <button class="filter" type="button" data-collection="All perfumes" aria-pressed="true">All perfumes</button>
+      <button class="filter" type="button" data-collection="For Him" aria-pressed="false">For Him</button>
+      <button class="filter" type="button" data-collection="For Her" aria-pressed="false">For Her</button>
+    </div>
+    <div class="tools"><div id="filters" aria-label="Filter by scent family"></div><span id="result-count" aria-live="polite"></span></div>
+    <div id="products"></div>
+  </section>
+  <section id="ordering" class="ordering" aria-labelledby="ordering-title">
+    <div class="wrap section-space">
+      <div class="section-heading" data-reveal><p class="eyebrow">FROM BROWSING TO CHECKOUT</p><h2 id="ordering-title">How to order</h2></div>
+      <ol class="order-steps" data-reveal>
+        <li><span aria-hidden="true">01</span><h3>Choose a perfume</h3><p>Search by name, scent hint, or inspiration. Open a bottle to see its details.</p></li>
+        <li><span aria-hidden="true">02</span><h3>Review your bag</h3><p>Adjust quantities and check your subtotal. Each perfume is ₱250.</p></li>
+        <li><span aria-hidden="true">03</span><h3>Prepare your request</h3><p>Enter your delivery details at checkout, then copy or download your order request.</p></li>
+      </ol>
+    </div>
+  </section>
 </main>
-<footer><div class="wrap footer"><a class="brand" href="#">The Vinity</a><span>Perfume shop</span><a href="#collection">Back to collection ↑</a></div></footer>
+<footer><div class="wrap footer">
+  <div><a class="brand" href="#home"><span aria-hidden="true">✦</span>The Vinity<small>PERFUME SHOP</small></a></div>
+  <nav aria-label="Footer navigation"><a href="#about">About</a><a href="#collection">Collection</a><a href="#ordering">How to order</a></nav>
+  <a class="footer-top" href="#home">Back to top ↑</a>
+</div></footer>
 <dialog id="bag-dialog" aria-labelledby="bag-title">
-<header class="drawer-header"><div><p class="eyebrow">THE VINITY</p><h2 id="bag-title">Your bag</h2></div><button type="button" id="close-bag" class="icon-button" aria-label="Close bag">×</button></header>
-<div id="drawer-content"></div>
+  <header class="drawer-header"><div><p class="eyebrow">THE VINITY</p><h2 id="bag-title">Your bag</h2></div><button type="button" id="close-bag" class="icon-button" aria-label="Close bag">×</button></header>
+  <div id="drawer-content"></div>
 </dialog>
 <dialog id="product-dialog" aria-labelledby="product-title">
-<div class="product-panel">
-<button type="button" id="close-product" class="icon-button" aria-label="Close product details" autofocus>×</button>
-<div id="product-details"></div>
-</div>
+  <div class="product-panel">
+    <button type="button" id="close-product" class="icon-button" aria-label="Close product details" autofocus>×</button>
+    <div id="product-details"></div>
+  </div>
 </dialog>
 <div id="notice" class="notice" role="status"></div>
 </body>
