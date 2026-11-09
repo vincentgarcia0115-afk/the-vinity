@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Explore The Vinity’s perfume collection, with every bottle at ₱250.">
-<meta name="theme-color" content="#1b1028">
+<meta name="theme-color" content="#F4F1FA">
 <title>The Vinity | Perfume shop</title>
-<link rel="stylesheet" href="style.css?v=motion">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&amp;family=Nunito:wght@700..900&amp;display=swap">
+<link rel="stylesheet" href="style.css?v=clay">
 <script src="catalog.js" defer></script>
 <script src="shop.js?v=orchid" defer></script>
 </head>
@@ -23,28 +24,27 @@
   </div>
 </div></header>
 <main id="main">
-  <section class="hero" aria-labelledby="hero-title">
+  <section class="hero wrap" aria-labelledby="hero-title">
     <div class="hero-heading">
-      <p class="eyebrow">THE VINITY / FRAGRANCE COLLECTION</p>
-      <h1 id="hero-title">Unmistakable</h1>
-    </div>
-    <img class="hero-product" src="assets/11.svg" alt="Bomb Shell Beauty perfume bottle" fetchpriority="high">
-    <span class="hero-marker" aria-hidden="true"></span>
-    <div class="hero-discover">
-      <p class="eyebrow">77 SCENTS TO EXPLORE</p>
-      <p>Find a fragrance that feels like yours.</p>
+      <p class="eyebrow"><span aria-hidden="true">✦</span> THE VINITY FRAGRANCE COLLECTION</p>
+      <h1 id="hero-title">Find your<br><span>signature scent.</span></h1>
+      <p>Explore 77 fragrances. Find a familiar favorite or try something new for ₱250 a bottle.</p>
       <a class="primary" href="#collection">Shop the collection <span aria-hidden="true">↗</span></a>
     </div>
-    <button id="hero-feature" class="hero-feature" type="button" aria-label="View Bomb Shell Beauty perfume details">
-      <img src="assets/11.svg" alt="">
-      <span><span class="eyebrow">BOMB SHELL BEAUTY / FOR HER</span><strong>₱250</strong><small>Fruity · Sweet · Citrus</small></span>
-      <span class="hero-arrow" aria-hidden="true">↗</span>
-    </button>
+    <div class="hero-display">
+      <div class="hero-orbs" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <img class="hero-product" src="assets/11.svg" alt="Bomb Shell Beauty perfume bottle" fetchpriority="high">
+      <button id="hero-feature" class="hero-feature" type="button" aria-label="View Bomb Shell Beauty perfume details">
+        <span class="hero-feature-icon" aria-hidden="true">✦</span>
+        <span><span class="eyebrow">FEATURED SCENT</span><strong>Bomb Shell Beauty</strong><small>Fruity · Sweet · Citrus</small></span>
+        <span class="hero-price">₱250</span>
+      </button>
+    </div>
   </section>
   <section id="featured" class="wrap featured section-space" aria-labelledby="featured-title">
     <div class="section-heading" data-reveal>
       <p class="eyebrow">FROM THE COLLECTION</p>
-      <h2 id="featured-title">Find your signature scent</h2>
+      <h2 id="featured-title">Meet the fragrances</h2>
       <p>Four fragrances to start with, from fresh and powdery to warm and sweet.</p>
     </div>
     <div id="featured-products" class="featured-grid" data-reveal></div>
