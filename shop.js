@@ -251,19 +251,6 @@ $('#track-form').addEventListener('submit',async (event) => {
 
 $('#hero-feature').addEventListener('click', () => showProduct(products.get(11)));
 
-const featured = [11, 42, 71, 32].map((id) => products.get(id));
-$('#featured-products').innerHTML = featured.map(({id, name, family}) =>
-  `<button class="featured-item" type="button" data-details="${id}" aria-label="View featured ${name}">
-    <span class="featured-photo"><img src="assets/${id}.svg" alt="" loading="lazy"></span>
-    <span class="family">${family}</span><strong>${name}</strong><span>${money(price)}</span>
-    <span class="featured-link">View perfume <span aria-hidden="true">→</span></span>
-  </button>`
-).join('');
-$('#featured-products').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-details]');
-  if (button) showProduct(products.get(Number(button.dataset.details)));
-});
-
 const navLinks = document.querySelectorAll('.nav-links a');
 function syncNavigation() {
   const hash = location.hash || '#home';
@@ -275,17 +262,6 @@ function syncNavigation() {
 window.addEventListener('hashchange', syncNavigation);
 syncNavigation();
 $('.search-link').addEventListener('click', () => requestAnimationFrame(() => $('#search').focus({preventScroll:true})));
-
-if (window.IntersectionObserver && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-  const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      entry.target.classList.add('revealed');
-      observer.unobserve(entry.target);
-    }
-  }, {threshold: .12});
-  document.querySelectorAll('[data-reveal]').forEach((element) => observer.observe(element));
-}
 
 $('#filters').innerHTML = ['All scents', ...families].map((family) =>
   `<button class="filter" type="button" aria-pressed="${family === selected}">${family}</button>`
