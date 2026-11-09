@@ -249,6 +249,8 @@ $('#track-form').addEventListener('submit',async (event) => {
   }
 });
 
+$('#hero-feature').addEventListener('click', () => showProduct(products.get(11)));
+
 const featured = [11, 42, 71, 32].map((id) => products.get(id));
 $('#featured-products').innerHTML = featured.map(({id, name, family}) =>
   `<button class="featured-item" type="button" data-details="${id}" aria-label="View featured ${name}">

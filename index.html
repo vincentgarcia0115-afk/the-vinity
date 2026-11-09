@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Explore The Vinity’s perfume collection, with every bottle at ₱250.">
-<meta name="theme-color" content="#f8f3ee">
+<meta name="theme-color" content="#1b1028">
 <title>The Vinity | Perfume shop</title>
-<link rel="stylesheet" href="style.css?v=orders">
+<link rel="stylesheet" href="style.css?v=orchid">
 <script src="catalog.js" defer></script>
-<script src="shop.js?v=orders" defer></script>
+<script src="shop.js?v=orchid" defer></script>
 </head>
 <body id="home">
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="header"><div class="wrap nav">
-  <a class="brand" href="#home"><span aria-hidden="true">✦</span>The Vinity<small>PERFUME SHOP</small></a>
   <nav class="nav-links" aria-label="Main navigation">
     <a href="#home" aria-current="location">Home</a><a href="#about">About</a><a href="#collection">Collection</a><a href="#ordering">How to order</a><a href="#track">Track order</a>
   </nav>
+  <a class="brand" href="#home"><span aria-hidden="true">✦</span>The Vinity<small>PERFUME SHOP</small></a>
   <div class="nav-actions">
     <a class="search-link" href="#collection" aria-label="Search the collection"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></a>
     <button id="open-bag" class="bag" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 13H4L5 8Zm4 1V6a3 3 0 0 1 6 0v3"/></svg> Bag <span id="count">0</span></button>
@@ -24,16 +24,22 @@
 </div></header>
 <main id="main">
   <section class="hero" aria-labelledby="hero-title">
-    <div class="intro">
-      <p class="eyebrow">THE VINITY FRAGRANCE COLLECTION</p>
-      <h1 id="hero-title">A scent to<br>make your own.</h1>
-      <p class="intro-copy">Find a new favorite by scent, mood, or fragrance inspiration. Every perfume is ₱250.</p>
-      <a class="primary" href="#collection">Discover the collection <span aria-hidden="true">→</span></a>
+    <div class="hero-heading">
+      <p class="eyebrow">THE VINITY / FRAGRANCE COLLECTION</p>
+      <h1 id="hero-title">Unmistakable</h1>
     </div>
-    <div class="hero-stage" aria-hidden="true">
-      <img class="hero-product" src="assets/11.svg" alt="" fetchpriority="high">
-      <span class="hero-caption"><span></span> Bomb Shell Beauty</span>
+    <img class="hero-product" src="assets/11.svg" alt="Bomb Shell Beauty perfume bottle" fetchpriority="high">
+    <span class="hero-marker" aria-hidden="true"></span>
+    <div class="hero-discover">
+      <p class="eyebrow">77 SCENTS TO EXPLORE</p>
+      <p>Find a fragrance that feels like yours.</p>
+      <a class="primary" href="#collection">Shop the collection <span aria-hidden="true">↗</span></a>
     </div>
+    <button id="hero-feature" class="hero-feature" type="button" aria-label="View Bomb Shell Beauty perfume details">
+      <img src="assets/11.svg" alt="">
+      <span><span class="eyebrow">BOMB SHELL BEAUTY / FOR HER</span><strong>₱250</strong><small>Fruity · Sweet · Citrus</small></span>
+      <span class="hero-arrow" aria-hidden="true">↗</span>
+    </button>
   </section>
   <section id="featured" class="wrap featured section-space" aria-labelledby="featured-title">
     <div class="section-heading" data-reveal>
