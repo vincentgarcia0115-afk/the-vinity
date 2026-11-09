@@ -162,17 +162,11 @@ footer { background: #190d23; color: var(--ink); }
 }
 @media (prefers-reduced-motion: no-preference) {
   .nav-links a::after { transition: transform 180ms ease; }
-  .hero-heading { animation: vinity-enter 620ms ease-out both; }
-  .hero-product { animation: product-arrival 750ms 80ms ease-out both; }
   [data-reveal].revealed { animation: vinity-enter 540ms ease-out both; }
   .featured-item, .featured-photo img, .primary, .load-more { transition: transform 210ms ease, background-color 210ms ease, border-color 210ms ease; }
   .featured-item:hover, .featured-item:focus-visible { border-color: #ad6aa8; }
   .featured-item:hover img, .featured-item:focus-visible img { transform: translateY(-5px); }
   .primary:hover, .load-more:hover { transform: translateY(-2px); }
-}
-@keyframes product-arrival {
-  from { opacity: 0; transform: translate(-50%, 12px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 .track-form { max-width: 540px; margin: 0 auto; }
@@ -280,6 +274,35 @@ button:disabled { opacity: .62; }
   .hero-discover .primary { font-size: 12px; padding-inline: 8px; gap: 5px; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .hero-feature { animation: vinity-enter 650ms 220ms ease-out both; transition: border-color 180ms ease; }
-  .hero-discover { animation: vinity-enter 650ms 140ms ease-out both; }
+  .hero::before { animation: stage-settle 3.6s ease-out; }
+  .hero-heading { animation: title-reveal 850ms cubic-bezier(.2,.7,.2,1) backwards; }
+  .hero-product { animation: product-arrival 1.15s 180ms cubic-bezier(.16,.82,.22,1) backwards; }
+  .hero-marker { animation: vinity-enter 400ms 1s backwards; }
+  .hero-marker::before { animation: marker-pulse 900ms 1.35s 2; }
+  .hero-marker::after { animation: draw-connector 550ms 1.1s ease-out backwards; }
+  .hero-feature {
+    animation: vinity-enter 580ms 1.38s ease-out backwards;
+    transition: transform 180ms ease, border-color 180ms ease;
+  }
+  .hero-feature:is(:hover, :focus-visible) { transform: translateY(-4px); }
+  .hero-discover { animation: vinity-enter 580ms 1.15s ease-out backwards; }
+}
+@keyframes stage-settle {
+  from { transform: scale(1.09); opacity: .7; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes title-reveal {
+  from { opacity: 0; transform: translateY(20px); clip-path: inset(0 0 100%); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
+}
+@keyframes product-arrival {
+  from { opacity: 0; transform: translate(-50%, 44px) scale(.91); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes marker-pulse {
+  50% { box-shadow: 0 0 0 7px #ffb9e655; }
+}
+@keyframes draw-connector {
+  from { opacity: 0; transform: rotate(20deg) scaleX(0); }
+  to { opacity: 1; transform: rotate(20deg) scaleX(1); }
 }
