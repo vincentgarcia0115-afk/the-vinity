@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Browse and order perfume from The Vinity.">
+<title>The Vinity | Perfume shop</title>
+<link rel="stylesheet" href="style.css">
+<script src="catalog.js" defer></script>
+<script src="shop.js" defer></script>
+</head>
+<body>
+<header class="header"><div class="wrap nav"><a class="brand" href="#">The Vinity</a><a class="nav-link" href="#collection">Collection</a><button id="open-bag" class="bag" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 13H4L5 8Zm4 1V6a3 3 0 0 1 6 0v3"/></svg> Bag <span id="count">0</span></button></div></header>
+<main>
+<section class="hero wrap">
+<div class="intro"><p class="eyebrow"><span></span> THE PERFUME SHOP</p><h1>Find your<br>signature scent.</h1><p class="intro-copy">Browse the scent hints and inspirations to find a perfume you’ll love. Every bottle is ₱250.</p><a class="primary" href="#collection">Shop the collection <span aria-hidden="true">↘</span></a></div>
+<div class="showcase" aria-hidden="true"><div id="hero-art"></div></div>
+</section>
+<section id="collection" class="wrap collection" aria-labelledby="collection-title">
+<div class="collection-head"><div><p class="eyebrow"><span></span> EXPLORE THE SCENTS</p><h2 id="collection-title">Shop the collection</h2></div><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input id="search" type="search" aria-label="Search perfumes" placeholder="Search perfumes or scents"></label></div>
+<div class="tools"><div id="filters" aria-label="Filter by scent family"></div><span id="result-count" aria-live="polite"></span></div>
+<div class="grid" id="products"></div>
+</section>
+</main>
+<footer><div class="wrap footer"><a class="brand" href="#">The Vinity</a><span>Perfume shop</span><a href="#collection">Back to collection ↑</a></div></footer>
+<dialog id="bag-dialog" aria-labelledby="bag-title">
+<header class="drawer-header"><div><p class="eyebrow">THE VINITY</p><h2 id="bag-title">Your bag</h2></div><button type="button" id="close-bag" class="icon-button" aria-label="Close bag">×</button></header>
+<div id="drawer-content"></div>
+</dialog>
+<div id="notice" class="notice" role="status"></div>
+</body>
+</html>
