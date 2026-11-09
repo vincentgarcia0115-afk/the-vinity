@@ -190,3 +190,13 @@ footer { background: #2c1d18; color: #fff7ee; }
   from { opacity: 0; transform: translate(-50%, 12px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+.track-form { max-width: 540px; margin: 0 auto; }
+.track-form label, .receipt { display: grid; gap: 5px; font-weight: 650; }
+.track-form > div { display: flex; gap: 8px; margin-top: 6px; }
+.track-form input, .receipt input { flex: 1; min-width: 0; padding: 9px 11px; background: white; color: var(--ink); border: 1px solid #bca89d; }
+.track-form button { flex-shrink: 0; }
+#tracking-result { margin-top: 10px; }
+#tracking-result:empty { display: none; }
+button:disabled { opacity: .62; }
+@media (max-width: 370px) { .nav-links { gap: 10px; } .track-form > div { flex-direction: column; } }

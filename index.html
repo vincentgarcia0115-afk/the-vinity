@@ -6,16 +6,16 @@
 <meta name="description" content="Explore The Vinity’s perfume collection, with every bottle at ₱250.">
 <meta name="theme-color" content="#f8f3ee">
 <title>The Vinity | Perfume shop</title>
-<link rel="stylesheet" href="style.css?v=editorial">
+<link rel="stylesheet" href="style.css?v=orders">
 <script src="catalog.js" defer></script>
-<script src="shop.js?v=editorial" defer></script>
+<script src="shop.js?v=orders" defer></script>
 </head>
 <body id="home">
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="header"><div class="wrap nav">
   <a class="brand" href="#home"><span aria-hidden="true">✦</span>The Vinity<small>PERFUME SHOP</small></a>
   <nav class="nav-links" aria-label="Main navigation">
-    <a href="#home" aria-current="location">Home</a><a href="#about">About</a><a href="#collection">Collection</a><a href="#ordering">How to order</a>
+    <a href="#home" aria-current="location">Home</a><a href="#about">About</a><a href="#collection">Collection</a><a href="#ordering">How to order</a><a href="#track">Track order</a>
   </nav>
   <div class="nav-actions">
     <a class="search-link" href="#collection" aria-label="Search the collection"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></a>
@@ -78,14 +78,25 @@
       <ol class="order-steps" data-reveal>
         <li><span aria-hidden="true">01</span><h3>Choose a perfume</h3><p>Search by name, scent hint, or inspiration. Open a bottle to see its details.</p></li>
         <li><span aria-hidden="true">02</span><h3>Review your bag</h3><p>Adjust quantities and check your subtotal. Each perfume is ₱250.</p></li>
-        <li><span aria-hidden="true">03</span><h3>Prepare your request</h3><p>Enter your delivery details at checkout, then copy or download your order request.</p></li>
+        <li><span aria-hidden="true">03</span><h3>Prepare your request</h3><p>Enter your delivery details, send your order, and save the reference to check its status.</p></li>
       </ol>
     </div>
+  </section>
+  <section id="track" class="wrap section-space" aria-labelledby="track-title">
+    <div class="section-heading" data-reveal>
+      <p class="eyebrow">CUSTOMER ORDER STATUS</p><h2 id="track-title">Track your order</h2>
+      <p>Enter the reference you received at checkout.</p>
+    </div>
+    <form id="track-form" class="track-form">
+      <label for="order-reference">Order reference</label>
+      <div><input id="order-reference" name="reference" required maxlength="36" autocomplete="off" spellcheck="false"><button class="primary" type="submit">Check status</button></div>
+      <p id="tracking-result" role="status"></p>
+    </form>
   </section>
 </main>
 <footer><div class="wrap footer">
   <div><a class="brand" href="#home"><span aria-hidden="true">✦</span>The Vinity<small>PERFUME SHOP</small></a></div>
-  <nav aria-label="Footer navigation"><a href="#about">About</a><a href="#collection">Collection</a><a href="#ordering">How to order</a></nav>
+  <nav aria-label="Footer navigation"><a href="#about">About</a><a href="#collection">Collection</a><a href="#ordering">How to order</a><a href="#track">Track order</a></nav>
   <a class="footer-top" href="#home">Back to top ↑</a>
 </div></footer>
 <dialog id="bag-dialog" aria-labelledby="bag-title">

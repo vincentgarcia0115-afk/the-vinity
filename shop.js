@@ -1,6 +1,5 @@
 const price = 250;
-const orderEmail = '';
-const whatsappNumber = '';
+const orderService = 'https://the-vinity-orders.jeffreysimbahon14.chatgpt.site';
 const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat('en-PH', {
   style: 'currency', currency: 'PHP', maximumFractionDigits: 0
@@ -17,6 +16,8 @@ let selectedCollection = 'All perfumes';
 const pageSize = 6;
 const visibleCounts = new Map();
 let stage = 'bag';
+let sendingOrder = false;
+let orderDraft;
 let noticeTimer;
 
 // Only product IDs and quantities are stored on this device.
@@ -46,6 +47,10 @@ function changeQuantity(id, change) {
   if (qty > 99) return;
   if (qty > 0) bag.set(id, qty);
   else bag.delete(id);
+  saveBag();
+}
+
+function saveBag() {
   try {
     localStorage.setItem('vinity-bag', JSON.stringify([...bag]));
   } catch {}
@@ -144,7 +149,7 @@ function renderCheckout() {
       <label>Full name <input name="name" autocomplete="name" required maxlength="100"></label>
       <label>Mobile number <input name="phone" type="tel" autocomplete="tel" required maxlength="30"></label>
       <label>Delivery address <textarea name="address" autocomplete="street-address" required maxlength="400"></textarea></label>
-      <p>The shop confirms delivery fees, availability and payment when it receives your request.</p>
+      <p>The shop reviews your order and confirms delivery fees and payment.</p>
       <button type="submit" class="primary">Review order request</button>
     </form>`;
   const form = content.querySelector('form');
@@ -158,28 +163,91 @@ function renderRequest() {
   const lines = [...bag].map(([id, qty]) =>
     `${qty} × ${products.get(id).name} · ${money(qty * price)}`
   );
+  const order = {...details, items:[...bag].map(([id, qty]) => ({id,qty}))};
+  const fingerprint = JSON.stringify(order);
+  if (orderDraft?.fingerprint !== fingerprint) orderDraft = {id:crypto.randomUUID(),fingerprint};
   const request = ['The Vinity order request', '', ...lines, '',
     'Items subtotal: ' + money(totalItems() * price),
     '', 'Name: ' + details.name, 'Mobile: ' + details.phone, 'Delivery address: ' + details.address
   ].join('\n');
-  content.innerHTML = `<p class="order-note">Send this request to The Vinity to confirm your order.</p>
+  content.innerHTML = `<p class="order-note">Review your items and delivery details, then submit the order to The Vinity.</p>
     <pre class="order-text"></pre><div class="actions">
-      <button type="button" class="primary" data-action="copy">Copy order request</button>
+      <button type="button" class="primary" data-action="send">Submit order</button>
+      <button type="button" class="secondary" data-action="copy">Copy request</button>
       <button type="button" class="secondary" data-action="download">Download</button>
       <button type="button" class="secondary" data-action="checkout">Edit details</button>
     </div><p class="order-note" id="request-status" role="status"></p>`;
   content.querySelector('pre').textContent = request;
-  const sendUrl = whatsappNumber ? 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(request) :
-    orderEmail ? 'mailto:' + orderEmail + '?subject=The%20Vinity%20order%20request&body=' + encodeURIComponent(request) : '';
-  if (sendUrl) {
-    const link = document.createElement('a');
-    link.className = 'primary';
-    link.href = sendUrl;
-    link.textContent = whatsappNumber ? 'Open WhatsApp' : 'Open email';
-    content.querySelector('.actions').prepend(link);
-  }
   content.querySelector('.actions').firstElementChild.focus();
 }
+
+async function orderApi(path, data) {
+  let response;
+  try {
+    response = await fetch(orderService + '/api/' + path, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data), signal:AbortSignal.timeout(15000)
+    });
+  } catch {
+    throw new Error('The order service could not be reached. Try again.');
+  }
+  const result = await response.json().catch(() => null);
+  if (!response.ok || !result) throw new Error(result?.error || 'The order service is unavailable. Try again.');
+  return result;
+}
+
+async function sendOrder() {
+  if (sendingOrder) return;
+  sendingOrder = true;
+  const feedback = $('#request-status');
+  const buttons = [...content.querySelectorAll('button'), $('#close-bag')];
+  for (const button of buttons) button.disabled = true;
+  feedback.textContent = 'Submitting your order…';
+  try {
+    const items = [...bag].map(([id,qty]) => ({id,qty}));
+    const order = await orderApi('orders', {id:orderDraft.id,...details,items});
+    for (const {id,qty} of items) {
+      const remaining = (bag.get(id) || 0) - qty;
+      if (remaining > 0) bag.set(id,remaining);
+      else bag.delete(id);
+    }
+    saveBag();
+    for (const key of Object.keys(details)) details[key] = '';
+    orderDraft = undefined;
+    $('#order-reference').value = order.id;
+    try { localStorage.setItem('vinity-order-reference',order.id); } catch {}
+    $('#bag-title').textContent = 'Order received';
+    content.innerHTML = `<p>Save this reference to check your order status.</p>
+      <label class="receipt">Order reference<input readonly></label>
+      <div class="subtotal"><span>Items subtotal</span><strong>${money(order.subtotal)}</strong></div>
+      <a class="primary" id="track-receipt" href="#track">Track this order</a>`;
+    content.querySelector('input').value = order.id;
+    $('#track-receipt').addEventListener('click',() => drawer.close());
+    $('#track-receipt').focus();
+  } catch (error) {
+    feedback.textContent = error.message;
+  } finally {
+    for (const button of buttons) button.disabled = false;
+    sendingOrder = false;
+  }
+}
+
+try { $('#order-reference').value = localStorage.getItem('vinity-order-reference') || ''; } catch {}
+$('#track-form').addEventListener('submit',async (event) => {
+  event.preventDefault();
+  const button = event.target.querySelector('button');
+  const result = $('#tracking-result');
+  button.disabled = true;
+  result.textContent = 'Checking order status…';
+  try {
+    const order = await orderApi('track', {id:$('#order-reference').value.trim()});
+    result.textContent = `${order.status} · Items subtotal ${money(order.subtotal)}`;
+  } catch (error) {
+    result.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
 
 const featured = [11, 42, 71, 32].map((id) => products.get(id));
 $('#featured-products').innerHTML = featured.map(({id, name, family}) =>
@@ -259,7 +327,8 @@ $('#open-bag').addEventListener('click', () => {
   drawer.showModal();
 });
 $('#close-bag').addEventListener('click', () => drawer.close());
-drawer.addEventListener('click', (event) => { if (event.target === drawer) drawer.close(); });
+drawer.addEventListener('click', (event) => { if (event.target === drawer && !sendingOrder) drawer.close(); });
+drawer.addEventListener('cancel', (event) => { if (sendingOrder) event.preventDefault(); });
 
 content.addEventListener('click', async (event) => {
   const button = event.target.closest('button');
@@ -285,6 +354,9 @@ content.addEventListener('click', async (event) => {
       drawer.close();
       $('#collection').scrollIntoView();
       $('#search').focus({preventScroll:true});
+      break;
+    case 'send':
+      await sendOrder();
       break;
     case 'copy':
       try {
