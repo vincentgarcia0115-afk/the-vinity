@@ -68,6 +68,9 @@ svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width:
 #hero-feature { position: absolute; z-index: 2; right: 16px; bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 19px; padding: 10px 13px; min-width: 206px; background: var(--white); color: var(--ink); border: 1px solid transparent; border-radius: 8px; text-align: left; }
 #hero-feature small { display: block; color: var(--accent); font-size: 12px; }
 #hero-feature strong { display: block; font-size: 15px; }
+#hero-motion { position: absolute; z-index: 3; top: 12px; right: 12px; min-height: 44px; padding: 6px 12px; border: 1px solid #f6dce978; border-radius: 8px; background: #301338; color: #fff; font: inherit; font-size: 12px; }
+#hero-motion:focus-visible { outline-color: #ffe9f6; }
+@media (prefers-reduced-motion: reduce) { #hero-motion { display: none; } }
 .shop-notes { background: var(--rose-light); border-bottom: 1px solid var(--line); }
 .shop-notes ul { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; list-style: none; margin-block: 0; padding: 13px 0; text-align: center; font-size: 13px; font-weight: 650; color: var(--accent); }
 .shop-notes li + li { border-left: 1px solid var(--line); }
@@ -269,12 +272,16 @@ dialog::backdrop { background: #25122a9e; }
   @keyframes catalog-arrival { from { opacity: .5; transform: translateY(8px); } }
   .hero-scene { animation: studio-arrival 650ms var(--ease-out) both; }
   @keyframes studio-arrival { from { opacity: .8; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
-  .hero-scene::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(115deg,transparent 28%,#ffd0ef29 49%,transparent 69%);
-    animation: studio-light 760ms var(--ease-out) both;
+  .hero-art[data-motion] .hero-scene::after {
+    content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg,transparent 23%,#ffd0ef50 49%,transparent 72%);
+    animation: studio-light 7s linear infinite;
   }
-  @keyframes studio-light { from { opacity: .75; transform: translateX(-40%); } to { opacity: 0; transform: translateX(34%); } }
+  .hero-art[data-motion="paused"] .hero-scene::after { animation-play-state: paused; opacity: 0; }
+  @keyframes studio-light {
+    0% { transform: translateX(-100%); }
+    55%, 100% { transform: translateX(100%); }
+  }
   #product-dialog[open][data-pointer-entry] { animation: product-arrival 200ms var(--ease-out) both; }
   #bag-dialog[open][data-pointer-entry] { animation: bag-arrival 230ms var(--ease-out) both; }
   dialog[open][data-pointer-entry]::backdrop { animation: backdrop-arrival 180ms var(--ease-out); }

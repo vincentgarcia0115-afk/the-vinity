@@ -577,6 +577,15 @@ $('#track-form').addEventListener('submit',async (event) => {
 });
 
 $('#hero-feature').addEventListener('click', (event) => showProduct(products.get(11),event.detail > 0));
+const heroMotion = $('#hero-motion');
+const heroArt = heroMotion.closest('.hero-art');
+heroMotion.addEventListener('click', () => {
+  const paused = heroArt.dataset.motion === 'running';
+  heroArt.dataset.motion = paused ? 'paused' : 'running';
+  heroMotion.textContent = paused ? 'Play animation' : 'Pause animation';
+});
+heroMotion.hidden = false;
+heroArt.dataset.motion = 'running';
 
 const navLinks = document.querySelectorAll('.nav-links a');
 function syncNavigation() {
