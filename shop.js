@@ -83,11 +83,11 @@ function scentDetails({inspiration, hints}) {
     ${hints.length ? `<ul class="scent-list" aria-label="Scent hints">${hints.map((hint) => `<li>${hint}</li>`).join('')}</ul>` : '<p class="inspiration">Unlisted</p>'}`;
 }
 
-function addButton({id, name}) {
+function addButton({id, name}, labelName = name) {
   const entry = inventory.get(id);
   const available = entry?.limit > 0;
   const label = available ? 'Add to bag' : entry?.availability ?? 'Checking stock';
-  return `<button type="button" data-add="${id}" ${available ? `aria-label="Add ${name} to bag"` : 'disabled'}>${label}</button>`;
+  return `<button type="button" data-add="${id}" ${available ? `aria-label="Add ${labelName} to bag"` : 'disabled'}>${label}</button>`;
 }
 
 function displayPrice(id) {
@@ -103,8 +103,19 @@ async function refreshInventory() {
   if ([...products.keys()].some((id) => !entries.has(id))) throw new Error('Inventory is unavailable.');
   inventory = entries;
   $('#inventory-message').hidden = true;
+  renderFeatured();
   renderProducts();
   if (productDialog.open) renderProduct(products.get(Number(productDialog.dataset.product)));
+}
+
+function renderFeatured() {
+  $('#featured-products').innerHTML = [11,61,5,32,71].map((id) => {
+    const product = products.get(id);
+    return `<article class="featured-card"><button type="button" class="featured-image" data-details="${id}" aria-label="View featured ${product.name} details">
+      <img src="assets/${id}.svg" alt="" loading="lazy"></button>
+      <h3>${product.name}</h3><p>${product.family}</p><strong>${displayPrice(id)}</strong>
+      ${addButton(product,`featured ${product.name}`)}</article>`;
+  }).join('');
 }
 
 function renderProducts() {
@@ -445,7 +456,7 @@ $('.catalog-filters').addEventListener('click', (event) => {
   renderProducts();
 });
 $('#search').addEventListener('input', renderProducts);
-$('#products').addEventListener('click', (event) => {
+document.querySelectorAll('#products,#featured-products').forEach((list) => list.addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (!button) return;
   if (button.dataset.details) showProduct(products.get(Number(button.dataset.details)),event.detail > 0);
@@ -458,7 +469,13 @@ $('#products').addEventListener('click', (event) => {
     const group = collection === 'For Him' ? '#for-him' : '#for-her';
     $(group).closest('section').querySelectorAll('[data-details]')[limit]?.focus();
   }
-});
+}));
+document.querySelectorAll('a[data-family]').forEach((link) => link.addEventListener('click', () => {
+  selected = link.dataset.family;
+  selectedCollection = 'All perfumes';
+  $('#search').value = '';
+  renderProducts();
+}));
 $('#close-product').addEventListener('click', () => productDialog.close());
 productDialog.addEventListener('click', (event) => {
   if (event.target === productDialog) productDialog.close();
@@ -556,6 +573,7 @@ content.addEventListener('submit', async (event) => {
 });
 
 updateCount();
+renderFeatured();
 renderProducts();
 const retryInventory = $('#retry-inventory');
 async function loadInventory() {

@@ -9,12 +9,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&amp;family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=motion">
+<link rel="stylesheet" href="style.css?v=parfumerie">
 <script src="catalog.js" defer></script>
-<script src="shop.js?v=motion" defer></script>
+<script src="shop.js?v=parfumerie" defer></script>
 </head>
 <body id="home">
 <a class="skip-link" href="#main">Skip to content</a>
+<div class="store-ribbon">Cash on delivery <span aria-hidden="true">·</span> Explore 77 fragrances</div>
 <header class="header"><div class="wrap nav">
   <a class="brand" href="#home" aria-label="The Vinity home"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c0 6-4 10-10 10 6 0 10 4 10 10 0-6 4-10 10-10C16 12 12 8 12 2Z"/></svg>The Vinity</a>
   <div class="nav-actions">
@@ -23,7 +24,7 @@
     <button id="open-bag" class="bag" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l1 13H4L5 8Zm4 1V6a3 3 0 0 1 6 0v3"/></svg> Bag <span id="count">0</span></button>
   </div>
   <nav class="nav-links" aria-label="Main navigation">
-    <a href="#collection">Shop</a><a href="#ordering">How to order</a><a href="#track">Track order</a><a href="https://the-vinity-orders.jeffreysimbahon14.chatgpt.site/support">Help</a>
+    <a href="#collection">Shop</a><a href="#collections">Collections</a><a href="#featured">Featured</a><a href="#track">Track order</a><a href="https://the-vinity-orders.jeffreysimbahon14.chatgpt.site/support">Help</a>
   </nav>
 </div></header>
 <main id="main">
@@ -40,6 +41,8 @@
         <div class="hero-scene">
           <div class="hero-setting">
             <img class="hero-backdrop" src="assets/vinity-studio.webp" alt="" fetchpriority="high" width="1440" height="1080">
+            <img class="hero-companion hero-companion-left" src="assets/61.svg" alt="" width="282" height="1046">
+            <img class="hero-companion hero-companion-right" src="assets/42.svg" alt="" width="282" height="1046">
             <img class="hero-bottle" src="assets/11.svg" alt="Bomb Shell Beauty perfume bottle" width="282" height="1046">
           </div>
         </div>
@@ -55,6 +58,28 @@
       <li>77 perfumes to explore</li><li>Cash on delivery</li><li><a href="#track">Track your order online</a></li>
     </ul>
   </div>
+  <section id="collections" class="wrap editorial-section" aria-labelledby="collections-title">
+    <h2 class="editorial-title" id="collections-title">Shop by collection</h2>
+    <div class="collection-tiles">
+      <a class="collection-tile tile-floral" href="#collection" data-family="Floral"><strong>Floral</strong><span>Petals &amp; soft bouquets</span><span class="tile-action">Shop floral →</span></a>
+      <a class="collection-tile tile-warm" href="#collection" data-family="Warm"><strong>Warm</strong><span>Rich &amp; enveloping</span><span class="tile-action">Shop warm →</span></a>
+      <a class="collection-tile tile-fresh" href="#collection" data-family="Fresh"><strong>Fresh</strong><span>Bright &amp; airy</span><span class="tile-action">Shop fresh →</span></a>
+      <a class="collection-tile tile-sweet" href="#collection" data-family="Sweet"><strong>Sweet</strong><span>Soft &amp; indulgent</span><span class="tile-action">Shop sweet →</span></a>
+    </div>
+  </section>
+  <section id="featured" class="wrap editorial-section" aria-labelledby="featured-title">
+    <h2 class="editorial-title" id="featured-title">Featured fragrances</h2>
+    <div id="featured-products" class="featured-grid"></div>
+    <a class="editorial-link" href="#collection" data-family="All scents">View all fragrances →</a>
+  </section>
+  <section class="scent-edit" aria-labelledby="scent-edit-title">
+    <div class="wrap scent-edit-layout">
+      <div><h2 id="scent-edit-title">A fragrance for<br><em>every mood.</em></h2>
+      <p>Start with the notes you love, then explore the perfumes they inspire. Compare scent hints and inspirations to find the bottle you want to try next.</p>
+      <a class="primary" href="#collection" data-family="All scents">Find your fragrance →</a></div>
+      <div class="scent-edit-photo" aria-hidden="true"><img src="assets/32.svg" alt="" loading="lazy"></div>
+    </div>
+  </section>
   <section id="collection" class="wrap collection section-space" aria-labelledby="collection-title">
     <div class="collection-head section-heading">
       <div><h2 id="collection-title">The fragrance collection</h2>
@@ -123,8 +148,9 @@
 </main>
 <footer><div class="wrap footer">
   <div class="footer-brand"><a class="brand" href="#home">The Vinity</a><p>Perfume shop</p></div>
-  <nav aria-label="Footer navigation"><a href="#collection">Collection</a><a href="#ordering">How to order</a><a href="#track">Track order</a><a href="https://the-vinity-orders.jeffreysimbahon14.chatgpt.site/support">Help &amp; policies</a><a href="https://the-vinity-orders.jeffreysimbahon14.chatgpt.site/account">Sign in</a></nav>
-  <a class="footer-top" href="tel:+639243483889">Call 09243483889</a>
+  <nav aria-label="Shop links"><strong>Explore</strong><a href="#collections">Shop by collection</a><a href="#featured">Featured fragrances</a><a href="#collection">All fragrances</a></nav>
+  <nav aria-label="Customer care links"><strong>Customer care</strong><a href="#ordering">How to order</a><a href="#track">Track order</a><a href="https://the-vinity-orders.jeffreysimbahon14.chatgpt.site/support">Help &amp; policies</a></nav>
+  <nav aria-label="Contact and account"><strong>Contact &amp; account</strong><a href="tel:+639243483889">Call 09243483889</a><a href="https://the-vinity-orders.jeffreysimbahon14.chatgpt.site/account">Sign in</a></nav>
 </div></footer>
 <dialog id="bag-dialog" aria-labelledby="bag-title">
   <header class="drawer-header"><h2 id="bag-title">Your bag</h2><button type="button" id="close-bag" class="icon-button" aria-label="Close bag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
