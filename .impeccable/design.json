@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T04:10:00Z",
+  "title": "Design System: The Vinity",
+  "extensions": {
+    "colorMeta": {
+      "plum": {"role": "ink", "displayName": "Deep Plum"},
+      "rose": {"role": "accent", "displayName": "Orchid Pink"},
+      "lilac": {"role": "neutral", "displayName": "Lilac Paper"}
+    },
+    "motion": [
+      {"name": "ease-out", "value": "cubic-bezier(.23,1,.32,1)", "purpose": "Studio arrival and pointer press feedback."}
+    ],
+    "breakpoints": [
+      {"name": "stacked-hero", "value": "630px"},
+      {"name": "compact-navigation", "value": "820px"},
+      {"name": "stacked-filters", "value": "1090px"}
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary actions in the catalog and checkout.",
+      "html": "<button class=\"primary\">Add to bag</button>",
+      "css": ".primary { background:#682879; color:#fffcff; border:1px solid #682879; border-radius:8px; min-height:44px; padding:8px 13px; font:650 16px DM Sans,sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A fragrance campaign you can shop",
+    "overview": "Real perfume photography leads the storefront. Lilac, plum, and orchid pink carry into the catalog and order tools.",
+    "keyCharacteristics": ["Photographic studio hero", "Editorial serif headings", "Quiet forms and filters"],
+    "rules": [{"name": "Keep inventory truthful", "body": "Use real bottle photography, current prices, and current availability.", "section": "components"}],
+    "dos": ["Make the first shopping action easy to find on a phone."],
+    "donts": ["Repeat the campaign motion across transactional screens."]
+  }
+}
