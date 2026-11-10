@@ -57,10 +57,14 @@ svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width:
 .hero-actions .primary:hover { background: #ffddf0; }
 .hero-actions .primary:focus-visible,#hero-feature:focus-visible { outline-color: #ffe9f6; }
 .hero-art { position: relative; min-width: 0; isolation: isolate; margin-right: calc(-1 * max(40px,(100vw - 1240px)/2)); background: #48204f; }
-.hero-setting { position: absolute; inset: 0; overflow: hidden; }
-.hero-setting img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 76%; }
-.hero-bottle { position: absolute; z-index: 1; display: block; height: 57%; width: auto; left: 50%; bottom: 18.8%; transform: translateX(-50%); filter: drop-shadow(9px 9px 7px #240e3860); }
-.hero-art::after { content: ""; position: absolute; bottom: 18.4%; left: 50%; width: 12%; height: 1.2%; transform: translateX(-42%); background: #3614398c; border-radius: 50%; filter: blur(4px); }
+.hero-scene { position: absolute; inset: 0; overflow: hidden; container-type: size; }
+/* Keep the bottle and its shadows in the photograph’s coordinates as the hero crops. */
+.hero-setting { position: absolute; left: 50%; top: 76%; width: max(100%, 133.333cqh); aspect-ratio: 4 / 3; transform: translate(-50%,-76%); }
+.hero-backdrop { display: block; width: 100%; height: 100%; }
+.hero-bottle { position: absolute; z-index: 1; display: block; height: 57%; width: auto; left: 50%; bottom: 15.6%; transform: translateX(-50%); filter: brightness(.94) sepia(.12) saturate(1.09); }
+.hero-setting::before,.hero-setting::after { content: ""; position: absolute; border-radius: 50%; }
+.hero-setting::before { bottom: 14.6%; left: 49%; width: 18%; height: 2.2%; transform: rotate(-4deg); background: #3c123b85; filter: blur(7px); }
+.hero-setting::after { bottom: 15.2%; left: 45%; width: 11%; height: 1.3%; background: #321031be; filter: blur(2px); }
 #hero-feature { position: absolute; z-index: 2; right: 16px; bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 19px; padding: 10px 13px; min-width: 206px; background: var(--white); color: var(--ink); border: 1px solid transparent; border-radius: 8px; text-align: left; }
 #hero-feature small { display: block; color: var(--accent); font-size: 12px; }
 #hero-feature strong { display: block; font-size: 15px; }
@@ -202,8 +206,6 @@ dialog::backdrop { background: #25122a9e; }
   .hero-copy p { max-width: 31ch; }
   .hero-actions { margin-top: 16px; }
   .hero-art { min-height: clamp(272px,69vw,380px); margin-right: 0; }
-  .hero-bottle { bottom: 17.7%; }
-  .hero-art::after { bottom: 17.2%; }
   #hero-feature { right: 10px; bottom: 10px; padding: 6px 9px; min-width: 170px; gap: 8px; }
   #hero-feature strong { font-size: 13px; }
   .shop-notes ul { padding-block: 10px; font-size: 12px; gap: 3px; }
@@ -247,7 +249,7 @@ dialog::backdrop { background: #25122a9e; }
 }
 @media (max-width: 315px) { html { scroll-padding-top: 156px; } }
 @media (prefers-reduced-motion: no-preference) {
-  .hero-setting img { animation: studio-arrival 650ms var(--ease-out) both; }
+  .hero-scene { animation: studio-arrival 650ms var(--ease-out) both; }
   @keyframes studio-arrival { from { opacity: .8; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
 }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
