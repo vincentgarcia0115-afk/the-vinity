@@ -175,6 +175,11 @@ dialog::backdrop { background: #25122a9e; }
 .bag-select-all { display: flex; gap: 8px; align-items: center; min-height: 44px; border-bottom: 1px solid var(--line); }
 .bag-select-all input,.order-row > input,.checkout-choice input { accent-color: var(--accent); inline-size: 18px; block-size: 18px; flex: 0 0 auto; margin: 0; }
 .address-fields { display: grid; gap: 10px; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.checkout select { width: 100%; min-width: 0; min-height: 44px; padding: 7px; border: 1px solid var(--field-line); border-radius: 8px; color: var(--ink); background: var(--white); font: inherit; font-size: 16px; }
+.checkout select:disabled { background: var(--soft); }
+.address-picker-help { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.address-picker-help a { text-decoration: underline; }
+#address-picker-status:empty { display: none; }
 .checkout-step { color: var(--accent); font-size: 14px; font-weight: 700; margin-block: 10px; }
 .checkout-panel { min-width: 0; margin: 12px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
 .checkout-panel legend,.checkout-panel h3 { font-weight: 700; }

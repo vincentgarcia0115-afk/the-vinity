@@ -12,6 +12,9 @@ const productDialog = $('#product-dialog');
 const content = $('#drawer-content');
 const bag = new Map();
 const details = {name:'',phone:'',street:'',barangay:'',city:'',province:'',postal:''};
+const independentCities = 'Independent cities outside Metro Manila';
+let addressLocations;
+let manualAddress = false;
 const uncheckedItems = new Set();
 let selected = 'All scents';
 let selectedCollection = 'All perfumes';
@@ -71,7 +74,8 @@ function saveSelection() {
 }
 
 function deliveryAddress() {
-  return [details.street,details.barangay,[details.city,details.province,details.postal].filter(Boolean).join(', ')].join('\n');
+  const province = details.province === independentCities ? '' : details.province;
+  return [details.street,details.barangay,[details.city,province,details.postal].filter(Boolean).join(', ')].join('\n');
 }
 
 function announce(message) {
@@ -310,6 +314,80 @@ function syncBagSelection() {
   for (const button of content.querySelectorAll('[data-action="checkout"],[data-action="guest"]')) button.disabled = count === 0;
 }
 
+function setAddressOptions(select, prompt, names, value = '') {
+  const sorted = [...new Set(names)].sort((a,b) => a.localeCompare(b,'en',{numeric:true}));
+  select.replaceChildren(new Option(prompt,''), ...sorted.map((name) => new Option(name,name)));
+  if (sorted.includes(value)) select.value = value;
+  select.disabled = !sorted.length;
+}
+
+function setupAddressFields(form) {
+  const province = form.elements.province;
+  const city = form.elements.city;
+  const barangay = form.elements.barangay;
+  const manualButton = form.querySelector('[data-manual-address]');
+  const status = form.querySelector('#address-picker-status');
+  const submit = form.querySelector('[type="submit"]');
+  function useManualAddress(message = '') {
+    manualAddress = true;
+    for (const [select,maxLength,autocomplete] of [[province,65,'address-level1'],[city,65,'address-level2'],[barangay,60,'address-level3']]) {
+      const input = document.createElement('input');
+      input.name = select.name;
+      input.required = true;
+      input.maxLength = maxLength;
+      input.autocomplete = autocomplete;
+      input.value = select.value || details[select.name];
+      if (input.value === independentCities) input.value = '';
+      select.replaceWith(input);
+    }
+    manualButton.hidden = true;
+    submit.disabled = false;
+    status.textContent = message;
+  }
+  if (manualAddress) {
+    useManualAddress();
+    return;
+  }
+  manualButton.addEventListener('click',() => {
+    useManualAddress();
+    form.elements.province.focus();
+  });
+  submit.disabled = true;
+  status.textContent = 'Loading address options…';
+  addressLocations ??= fetch('assets/philippine-addresses.json',{signal:AbortSignal.timeout(8000)})
+    .then((response) => {
+      if (!response.ok) throw new Error('Address list unavailable');
+      return response.json();
+    })
+    .catch((error) => {
+      addressLocations = undefined;
+      throw error;
+    });
+  addressLocations.then((locations) => {
+    if (!form.isConnected || manualAddress) return;
+    const fillBarangays = (value = '') => {
+      const cities = locations[province.value];
+      setAddressOptions(barangay,city.value ? 'Choose a barangay' : 'Choose a city first',cities?.[city.value] ?? [],value);
+    };
+    const fillCities = (value = '') => {
+      const cities = locations[province.value] ?? {};
+      setAddressOptions(city,province.value ? 'Choose a city or municipality' : 'Choose an area first',Object.keys(cities),value);
+    };
+    setAddressOptions(province,'Choose a province or area',Object.keys(locations),details.province);
+    fillCities(details.city);
+    fillBarangays(details.barangay);
+    province.addEventListener('change',() => {
+      fillCities();
+      fillBarangays();
+    });
+    city.addEventListener('change',() => fillBarangays());
+    submit.disabled = false;
+    status.textContent = '';
+  }).catch(() => {
+    if (form.isConnected && !manualAddress) useManualAddress('Address options are unavailable. You can enter your address below.');
+  });
+}
+
 function renderCheckout() {
   stage = 'checkout';
   $('#bag-title').textContent = 'Delivery address';
@@ -319,11 +397,13 @@ function renderCheckout() {
       <label>Full name <input name="name" autocomplete="name" required maxlength="100"></label>
       <label>Mobile number <input name="phone" type="tel" autocomplete="tel" required maxlength="30"></label>
       <label>House or unit number, street and subdivision <textarea name="street" autocomplete="street-address" required maxlength="140"></textarea></label>
-      <label>Barangay <input name="barangay" required maxlength="60"></label>
       <div class="address-fields">
-        <label>City or municipality <input name="city" autocomplete="address-level2" required maxlength="65"></label>
-        <label>Province or Metro Manila <input name="province" autocomplete="address-level1" required maxlength="65"></label>
+        <label>Province or area <select name="province" autocomplete="address-level1" required disabled><option>Loading areas…</option></select></label>
+        <label>City or municipality <select name="city" autocomplete="address-level2" required disabled><option>Choose an area first</option></select></label>
       </div>
+      <label>Barangay <select name="barangay" autocomplete="address-level3" required disabled><option>Choose a city first</option></select></label>
+      <div class="address-picker-help"><button type="button" class="secondary" data-manual-address>Enter address manually</button><small>Location names from the <a href="https://psa.gov.ph/classification/psgc" target="_blank" rel="noopener">Philippine Statistics Authority</a>.</small></div>
+      <p id="address-picker-status" role="status"></p>
       <label>Postal code (optional) <input name="postal" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{4}" maxlength="4"></label>
       <p>Pay by cash on delivery. You’ll see the delivery fee and total on the next step when a fee is available.</p>
       <p>We use these details to fulfill your order. <a href="${orderService}/support#privacy" target="_blank" rel="noopener">Read the privacy notice</a>.</p>
@@ -331,7 +411,8 @@ function renderCheckout() {
       <p id="checkout-feedback" role="status"></p>
     </form>`;
   const form = content.querySelector('form');
-  for (const key of Object.keys(details)) form.elements[key].value = details[key];
+  for (const key of ['name','phone','street','postal']) form.elements[key].value = details[key];
+  setupAddressFields(form);
   form.elements.name.focus();
 }
 
@@ -412,6 +493,7 @@ async function sendOrder() {
     }
     saveBag();
     for (const key of Object.keys(details)) details[key] = '';
+    manualAddress = false;
     orderDraft = undefined;
     $('#order-reference').value = order.id;
     try { localStorage.setItem('vinity-order-reference',order.id); } catch {}
