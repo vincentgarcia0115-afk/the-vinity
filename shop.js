@@ -141,13 +141,17 @@ async function refreshInventory() {
 }
 
 function renderFeatured() {
-  $('#featured-products').innerHTML = [11,61,5,32,71].map((id) => {
+  const cards = [11,61,5,32,71].map((id) => {
     const product = products.get(id);
     return `<article class="featured-card"><button type="button" class="featured-image" data-details="${id}" aria-label="View featured ${product.name} details">
       <img src="assets/${id}.svg" alt="" loading="lazy"></button>
       <h3>${product.name}</h3><p>${product.family}</p><strong>${displayPrice(id)}</strong>
       ${addButton(product,`featured ${product.name}`)}</article>`;
   }).join('');
+  $('#featured-products .featured-grid').innerHTML = cards;
+  const copy = $('.featured-copy');
+  copy.innerHTML = cards;
+  for (const button of copy.querySelectorAll('button')) button.tabIndex = -1;
 }
 
 function productCard(product) {
@@ -586,6 +590,17 @@ heroMotion.addEventListener('click', () => {
 });
 heroMotion.hidden = false;
 heroArt.dataset.motion = 'running';
+const featuredMotion = $('#featured-motion');
+const featuredSection = $('#featured');
+featuredMotion.addEventListener('click', () => {
+  const paused = featuredSection.toggleAttribute('data-scroll-paused');
+  featuredMotion.textContent = paused ? 'Resume featured scroll' : 'Pause featured scroll';
+});
+$('.featured-copy').addEventListener('pointerdown', (event) => {
+  if (event.target.closest('button')) event.preventDefault();
+});
+featuredMotion.hidden = false;
+featuredSection.setAttribute('data-scroll-ready','');
 
 const navLinks = document.querySelectorAll('.nav-links a');
 function syncNavigation() {

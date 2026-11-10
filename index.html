@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&amp;family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=perfume-loop">
+<link rel="stylesheet" href="style.css?v=featured-loop">
 <script src="catalog.js" defer></script>
-<script src="shop.js?v=hero-loop" defer></script>
+<script src="shop.js?v=featured-loop" defer></script>
 </head>
 <body id="home">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -79,7 +79,13 @@
   </section>
   <section id="featured" class="wrap editorial-section" aria-labelledby="featured-title">
     <h2 class="editorial-title" id="featured-title">Featured fragrances</h2>
-    <div id="featured-products" class="featured-grid"></div>
+    <button id="featured-motion" class="secondary" type="button" hidden>Pause featured scroll</button>
+    <div class="featured-window">
+      <div id="featured-products" class="featured-track">
+        <div class="featured-grid"></div>
+        <div class="featured-grid featured-copy" aria-hidden="true"></div>
+      </div>
+    </div>
     <a class="editorial-link" href="#collection" data-family="All scents">View all fragrances →</a>
   </section>
   <section class="scent-edit" aria-labelledby="scent-edit-title">
