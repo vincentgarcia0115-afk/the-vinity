@@ -177,6 +177,15 @@ function orderTotals(amount, fee) {
   return `<dl class="order-totals">${rows.map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl>`;
 }
 
+function downloadText(filename, text) {
+  const url = URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url),1000);
+}
+
 async function deliveryFee() {
   const response = await fetch(orderService + '/api/checkout', {signal:AbortSignal.timeout(10000)});
   if (!response.ok) throw new Error('Delivery pricing is unavailable.');
@@ -299,9 +308,22 @@ async function sendOrder() {
       <label class="receipt">Order reference<input readonly></label>
       ${orderTotals(order.subtotal, order.delivery_fee)}
       <p class="order-note">Cash on delivery · ${order.payment_status || 'Unpaid'}</p>
-      <a class="primary" id="track-receipt" href="#track">Track this order</a>`;
+      <div class="actions"><a class="primary" id="track-receipt" href="#track">Track this order</a>
+      <button class="secondary" id="download-confirmation" type="button">Download confirmation</button></div>`;
     content.querySelector('input').value = order.id;
-    $('#track-receipt').addEventListener('click',() => drawer.close());
+    $('#download-confirmation').addEventListener('click',() => {
+      const confirmation = [
+        'The Vinity order confirmation', 'Reference: ' + order.id,
+        'Items subtotal: ' + money(order.subtotal), 'Delivery: ' + deliveryText(order.delivery_fee),
+        'Total: ' + (order.total == null ? 'Pending delivery fee' : money(order.total)),
+        'Payment: Cash on delivery', 'Track: ' + new URL('#track',location.href).href
+      ].join('\n');
+      downloadText('the-vinity-confirmation.txt',confirmation);
+    });
+    $('#track-receipt').addEventListener('click',() => {
+      drawer.close();
+      $('#track-form').requestSubmit();
+    });
     $('#track-receipt').focus();
     loadInventory();
   } catch (error) {
@@ -334,12 +356,19 @@ $('#track-form').addEventListener('submit',async (event) => {
   event.preventDefault();
   const button = event.target.querySelector('button');
   const result = $('#tracking-result');
+  const shipment = $('#shipment-details');
   button.disabled = true;
+  shipment.hidden = true;
   result.textContent = 'Checking order status…';
   try {
     const order = await orderApi('track', {id:$('#order-reference').value.trim()});
     const amount = order.total == null ? `Items subtotal ${money(order.subtotal)} · Delivery fee pending` : `Total ${money(order.total)}`;
     result.textContent = [order.status,amount,order.payment_method,order.payment_status].filter(Boolean).join(' · ');
+    if (order.shipment) {
+      $('#tracking-courier').textContent = order.shipment.courier;
+      $('#tracking-number').textContent = order.shipment.tracking_number;
+      shipment.hidden = false;
+    }
   } catch (error) {
     result.textContent = error.message;
   } finally {
@@ -450,12 +479,7 @@ content.addEventListener('click', async (event) => {
       }
       break;
     case 'download': {
-      const url = URL.createObjectURL(new Blob([orderDraft.requestText], {type:'text/plain;charset=utf-8'}));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'the-vinity-order.txt';
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      downloadText('the-vinity-order.txt',orderDraft.requestText);
       $('#request-status').textContent = 'Order request downloaded.';
       break;
     }

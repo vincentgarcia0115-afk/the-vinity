@@ -7,9 +7,9 @@
 <meta name="theme-color" content="#fbf7f2">
 <title>The Vinity | Perfume shop</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&amp;family=Fraunces:opsz,wght@9..144,400..600&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=inventory">
+<link rel="stylesheet" href="style.css?v=shipment">
 <script src="catalog.js" defer></script>
-<script src="shop.js?v=inventory" defer></script>
+<script src="shop.js?v=shipment" defer></script>
 </head>
 <body id="home">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -95,12 +95,16 @@
   <section id="track" class="wrap section-space" aria-labelledby="track-title">
     <div class="section-heading">
       <p class="eyebrow">CUSTOMER ORDER STATUS</p><h2 id="track-title">Track your order</h2>
-      <p>Enter the reference you received at checkout.</p>
+      <p>Enter your order reference to see the status, total, and shipping details.</p>
     </div>
     <form id="track-form" class="track-form">
       <label for="order-reference">Order reference</label>
       <div><input id="order-reference" name="reference" required maxlength="36" autocomplete="off" spellcheck="false"><button class="primary" type="submit">Check status</button></div>
       <p id="tracking-result" role="status"></p>
+      <dl id="shipment-details" class="order-totals shipment-details" hidden>
+        <div><dt>Courier</dt><dd id="tracking-courier"></dd></div>
+        <div><dt>Tracking number</dt><dd id="tracking-number"></dd></div>
+      </dl>
     </form>
   </section>
 </main>
