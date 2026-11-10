@@ -132,6 +132,27 @@ function subtotal() {
   return `<div class="subtotal"><span>Items subtotal</span><strong>${money(totalItems() * price)}</strong></div>`;
 }
 
+function deliveryText(fee) {
+  return fee == null ? 'To be confirmed' : fee === 0 ? 'Free' : money(fee);
+}
+
+function orderTotals(amount, fee) {
+  const rows = [
+    ['Items subtotal', money(amount)],
+    ['Delivery', deliveryText(fee)],
+    ['Total to pay', fee == null ? 'Pending delivery fee' : money(amount + fee)]
+  ];
+  return `<dl class="order-totals">${rows.map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl>`;
+}
+
+async function deliveryFee() {
+  const response = await fetch(orderService + '/api/checkout', {signal:AbortSignal.timeout(10000)});
+  if (!response.ok) throw new Error('Delivery pricing is unavailable.');
+  const {delivery_fee:fee} = await response.json();
+  if (fee !== null && (!Number.isInteger(fee) || fee < 0)) throw new Error('Delivery pricing is unavailable.');
+  return fee;
+}
+
 function renderBag() {
   stage = 'bag';
   $('#bag-title').textContent = 'Your bag';
@@ -156,15 +177,16 @@ function renderCheckout() {
       <label>Full name <input name="name" autocomplete="name" required maxlength="100"></label>
       <label>Mobile number <input name="phone" type="tel" autocomplete="tel" required maxlength="30"></label>
       <label>Delivery address <textarea name="address" autocomplete="street-address" required maxlength="400"></textarea></label>
-      <p>The shop reviews your order and confirms delivery fees and payment.</p>
-      <button type="submit" class="primary">Review order request</button>
+      <p>Pay by cash on delivery. You’ll see the delivery fee and total on the next step when a fee is available.</p>
+      <button type="submit" class="primary">Review order</button>
+      <p id="checkout-feedback" role="status"></p>
     </form>`;
   const form = content.querySelector('form');
   for (const key of Object.keys(details)) form.elements[key].value = details[key];
   form.elements.name.focus();
 }
 
-function renderRequest() {
+function renderRequest(fee, notice = '') {
   stage = 'request';
   $('#bag-title').textContent = 'Order request';
   const lines = [...bag].map(([id, qty]) =>
@@ -173,17 +195,22 @@ function renderRequest() {
   const order = {...details, items:[...bag].map(([id, qty]) => ({id,qty}))};
   const fingerprint = JSON.stringify(order);
   if (orderDraft?.fingerprint !== fingerprint) orderDraft = {id:crypto.randomUUID(),fingerprint};
-  const request = ['The Vinity order request', '', ...lines, '',
-    'Items subtotal: ' + money(totalItems() * price),
-    '', 'Name: ' + details.name, 'Mobile: ' + details.phone, 'Delivery address: ' + details.address
-  ].join('\n');
-  content.innerHTML = `<p class="order-note">Review your items and delivery details, then submit the order to The Vinity.</p>
+  orderDraft.deliveryFee = fee;
+  const amount = totalItems() * price;
+  const request = [...lines, '', 'Name: ' + details.name, 'Mobile: ' + details.phone, 'Delivery address: ' + details.address].join('\n');
+  orderDraft.requestText = ['The Vinity order request',request,'', 'Items subtotal: ' + money(amount), 'Delivery: ' + deliveryText(fee),
+    'Total to pay: ' + (fee == null ? 'Pending delivery fee' : money(amount + fee)), 'Payment: Cash on delivery'].join('\n');
+  content.innerHTML = `<p class="order-note">Review your items and delivery details before placing your order.</p>
+    <p class="order-note" id="request-status" role="status"></p>
+    ${orderTotals(amount, fee)}
+    <p class="order-note">Cash on delivery${fee == null ? ' · The shop will confirm your delivery fee and final total.' : ' · Pay when your order arrives.'}</p>
     <pre class="order-text"></pre><div class="actions">
       <button type="button" class="primary" data-action="send">Submit order</button>
       <button type="button" class="secondary" data-action="copy">Copy request</button>
       <button type="button" class="secondary" data-action="download">Download</button>
       <button type="button" class="secondary" data-action="checkout">Edit details</button>
-    </div><p class="order-note" id="request-status" role="status"></p>`;
+    </div>`;
+  $('#request-status').textContent = notice;
   content.querySelector('pre').textContent = request;
   content.querySelector('.actions').firstElementChild.focus();
 }
@@ -199,7 +226,11 @@ async function orderApi(path, data) {
     throw new Error('The order service could not be reached. Try again.');
   }
   const result = await response.json().catch(() => null);
-  if (!response.ok || !result) throw new Error(result?.error || 'The order service is unavailable. Try again.');
+  if (!response.ok || !result) {
+    const error = new Error(result?.error || 'The order service is unavailable. Try again.');
+    error.code = result?.code;
+    throw error;
+  }
   return result;
 }
 
@@ -212,7 +243,7 @@ async function sendOrder() {
   feedback.textContent = 'Submitting your order…';
   try {
     const items = [...bag].map(([id,qty]) => ({id,qty}));
-    const order = await orderApi('orders', {id:orderDraft.id,...details,items});
+    const order = await orderApi('orders', {id:orderDraft.id,...details,items,delivery_fee:orderDraft.deliveryFee});
     for (const {id,qty} of items) {
       const remaining = (bag.get(id) || 0) - qty;
       if (remaining > 0) bag.set(id,remaining);
@@ -226,13 +257,20 @@ async function sendOrder() {
     $('#bag-title').textContent = 'Order received';
     content.innerHTML = `<p>Save this reference to check your order status.</p>
       <label class="receipt">Order reference<input readonly></label>
-      <div class="subtotal"><span>Items subtotal</span><strong>${money(order.subtotal)}</strong></div>
+      ${orderTotals(order.subtotal, order.delivery_fee)}
+      <p class="order-note">Cash on delivery · ${order.payment_status || 'Unpaid'}</p>
       <a class="primary" id="track-receipt" href="#track">Track this order</a>`;
     content.querySelector('input').value = order.id;
     $('#track-receipt').addEventListener('click',() => drawer.close());
     $('#track-receipt').focus();
   } catch (error) {
-    feedback.textContent = error.message;
+    if (error.code === 'delivery_fee_changed') {
+      try {
+        renderRequest(await deliveryFee(),error.message);
+      } catch {
+        feedback.textContent = 'The delivery fee changed. Return to Edit details and review again.';
+      }
+    } else feedback.textContent = error.message;
   } finally {
     for (const button of buttons) button.disabled = false;
     sendingOrder = false;
@@ -248,7 +286,8 @@ $('#track-form').addEventListener('submit',async (event) => {
   result.textContent = 'Checking order status…';
   try {
     const order = await orderApi('track', {id:$('#order-reference').value.trim()});
-    result.textContent = `${order.status} · Items subtotal ${money(order.subtotal)}`;
+    const amount = order.total == null ? `Items subtotal ${money(order.subtotal)} · Delivery fee pending` : `Total ${money(order.total)}`;
+    result.textContent = [order.status,amount,order.payment_method,order.payment_status].filter(Boolean).join(' · ');
   } catch (error) {
     result.textContent = error.message;
   } finally {
@@ -345,14 +384,14 @@ content.addEventListener('click', async (event) => {
       break;
     case 'copy':
       try {
-        await navigator.clipboard.writeText(content.querySelector('pre').textContent);
+        await navigator.clipboard.writeText(orderDraft.requestText);
         $('#request-status').textContent = 'Order request copied.';
       } catch {
         if (stage === 'request') $('#request-status').textContent = 'Copy is unavailable. You can download the request instead.';
       }
       break;
     case 'download': {
-      const url = URL.createObjectURL(new Blob([content.querySelector('pre').textContent], {type:'text/plain;charset=utf-8'}));
+      const url = URL.createObjectURL(new Blob([orderDraft.requestText], {type:'text/plain;charset=utf-8'}));
       const link = document.createElement('a');
       link.href = url;
       link.download = 'the-vinity-order.txt';
@@ -368,10 +407,13 @@ content.addEventListener('input', (event) => {
   if (stage === 'checkout') event.target.setCustomValidity('');
 });
 
-content.addEventListener('submit', (event) => {
+content.addEventListener('submit', async (event) => {
   event.preventDefault();
+  const form = event.target;
+  const submit = form.querySelector('button[type=submit]');
+  if (submit.disabled) return;
   for (const key of Object.keys(details)) {
-    const field = event.target.elements[key];
+    const field = form.elements[key];
     details[key] = field.value.trim();
     const valid = details[key] && (key !== 'phone' || /^[+0-9(). -]+$/.test(details[key]) && details[key].replace(/\D/g, '').length >= 7);
     if (!valid) {
@@ -380,7 +422,18 @@ content.addEventListener('submit', (event) => {
       return;
     }
   }
-  renderRequest();
+  const fields = Array.from(form.elements);
+  for (const field of fields) field.disabled = true;
+  const feedback = $('#checkout-feedback');
+  feedback.textContent = 'Checking delivery fee…';
+  try {
+    const fee = await deliveryFee();
+    if (drawer.open && form.isConnected) renderRequest(fee);
+  } catch {
+    feedback.textContent = 'Could not check the delivery fee. Try reviewing your order again.';
+  } finally {
+    for (const field of fields) field.disabled = false;
+  }
 });
 
 updateCount();

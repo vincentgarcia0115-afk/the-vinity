@@ -141,6 +141,10 @@ dialog::backdrop { background: #2b1b2a85; }
 .product-copy h2 { font-size: 30px; margin: 5px 0 9px; }
 .order-row,.subtotal { justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .subtotal { margin-bottom: 14px; }
+.order-totals { margin-block: 12px; }
+.order-totals div { display: flex; justify-content: space-between; gap: 12px; padding-block: 8px; border-bottom: 1px solid var(--line); }
+.order-totals dd { margin: 0; text-align: right; font-weight: 600; }
+.order-totals div:last-child { font-weight: 700; }
 .line-name { flex: 1; }
 .stepper button { width: 44px; padding: 0; }
 .checkout { display: grid; gap: 9px; }
