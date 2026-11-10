@@ -61,10 +61,11 @@ svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width:
 /* Keep the bottle and its shadows in the photograph’s coordinates as the hero crops. */
 .hero-setting { position: absolute; left: 50%; top: 76%; width: max(100%, 133.333cqh); aspect-ratio: 4 / 3; transform: translate(-50%,-76%); }
 .hero-backdrop { display: block; width: 100%; height: 100%; }
-.hero-bottle { position: absolute; z-index: 1; display: block; height: 57%; width: auto; left: 50%; bottom: 15.6%; transform: translateX(-50%); filter: brightness(.94) sepia(.12) saturate(1.09); }
-.hero-setting::before,.hero-setting::after { content: ""; position: absolute; border-radius: 50%; }
-.hero-setting::before { bottom: 14.6%; left: 49%; width: 18%; height: 2.2%; transform: rotate(-4deg); background: #3c123b85; filter: blur(7px); }
-.hero-setting::after { bottom: 15.2%; left: 45%; width: 11%; height: 1.3%; background: #321031be; filter: blur(2px); }
+.hero-perfume-window { position: absolute; left: 50%; bottom: 12%; width: min(78cqw, 410px); height: 64%; overflow: hidden; transform: translateX(-50%); mask-image: linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
+.hero-perfume-track { display: flex; width: 200%; height: 100%; }
+.hero-perfumes { display: grid; flex: 0 0 50%; grid-template: minmax(0,1fr) / repeat(3,minmax(0,1fr)); justify-items: center; align-items: end; height: 100%; padding-bottom: 2.3cqh; }
+.hero-perfumes img { display: block; width: auto; max-width: 88%; height: 73%; object-fit: contain; object-position: bottom; filter: brightness(.94) drop-shadow(4px 5px 4px #2d0a3890); }
+.hero-perfumes img:nth-child(2) { height: 94%; }
 #hero-feature { position: absolute; z-index: 2; right: 16px; bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 19px; padding: 10px 13px; min-width: 206px; background: var(--white); color: var(--ink); border: 1px solid transparent; border-radius: 8px; text-align: left; }
 #hero-feature small { display: block; color: var(--accent); font-size: 12px; }
 #hero-feature strong { display: block; font-size: 15px; }
@@ -272,16 +273,9 @@ dialog::backdrop { background: #25122a9e; }
   @keyframes catalog-arrival { from { opacity: .5; transform: translateY(8px); } }
   .hero-scene { animation: studio-arrival 650ms var(--ease-out) both; }
   @keyframes studio-arrival { from { opacity: .8; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
-  .hero-art[data-motion] .hero-scene::after {
-    content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none;
-    background: linear-gradient(115deg,transparent 23%,#ffd0ef50 49%,transparent 72%);
-    animation: studio-light 7s linear infinite;
-  }
-  .hero-art[data-motion="paused"] .hero-scene::after { animation-play-state: paused; opacity: 0; }
-  @keyframes studio-light {
-    0% { transform: translateX(-100%); }
-    55%, 100% { transform: translateX(100%); }
-  }
+  .hero-art[data-motion] .hero-perfume-track { animation: perfume-scroll 15s linear infinite; }
+  .hero-art[data-motion="paused"] .hero-perfume-track { animation-play-state: paused; }
+  @keyframes perfume-scroll { to { transform: translateX(-50%); } }
   #product-dialog[open][data-pointer-entry] { animation: product-arrival 200ms var(--ease-out) both; }
   #bag-dialog[open][data-pointer-entry] { animation: bag-arrival 230ms var(--ease-out) both; }
   dialog[open][data-pointer-entry]::backdrop { animation: backdrop-arrival 180ms var(--ease-out); }
@@ -309,10 +303,6 @@ dialog::backdrop { background: #25122a9e; }
 .hero-actions .primary:focus-visible { outline-color: var(--accent); }
 .hero-art { background: transparent; }
 .hero-scene { mask-image: linear-gradient(90deg,transparent 0%,#000 22%); }
-.hero-companion { position: absolute; display: block; z-index: 1; width: auto; height: 43%; bottom: 15.3%; transform: translateX(-50%); filter: brightness(.88) sepia(.14) drop-shadow(4px 5px 4px #2d0a3890); }
-.hero-companion-left { left: 37%; }
-.hero-companion-right { left: 63%; }
-.hero-bottle { z-index: 2; }
 #hero-feature { z-index: 3; }
 .editorial-section { padding-block: 30px 12px; }
 .editorial-title { text-align: center; font-size: clamp(26px,3vw,40px); margin-bottom: 22px; }
