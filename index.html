@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Explore The Vinity’s perfume collection, with every bottle at ₱250.">
+<meta name="description" content="Explore The Vinity’s perfume collection and order your favorite fragrances.">
 <meta name="theme-color" content="#fbf7f2">
 <title>The Vinity | Perfume shop</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&amp;family=Fraunces:opsz,wght@9..144,400..600&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=checkout">
+<link rel="stylesheet" href="style.css?v=inventory">
 <script src="catalog.js" defer></script>
-<script src="shop.js?v=checkout" defer></script>
+<script src="shop.js?v=inventory" defer></script>
 </head>
 <body id="home">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -28,7 +28,7 @@
     <div class="hero-copy">
       <p class="eyebrow">THE VINITY PERFUME SHOP</p>
       <h1 id="hero-title">Find your<br>signature scent.</h1>
-      <p>Browse 77 perfumes by name, scent, or inspiration. Every bottle is ₱250.</p>
+      <p>Browse 77 perfumes by name, scent, or inspiration.</p>
       <div class="hero-actions">
         <a class="primary" href="#collection">Shop perfumes <span aria-hidden="true">↓</span></a>
         <a class="text-link" href="#track">Track an order</a>
@@ -67,6 +67,10 @@
         <button id="clear-filters" type="button" aria-label="Clear search and filters" disabled>Clear all</button>
       </div>
     </div>
+    <div id="inventory-message" class="empty" hidden>
+      <p role="status">Prices and availability could not be loaded.</p>
+      <button id="retry-inventory" class="secondary" type="button">Try again</button>
+    </div>
     <div id="products"></div>
   </section>
   <section id="ordering" class="ordering" aria-labelledby="ordering-title">
@@ -74,7 +78,7 @@
       <div class="section-heading"><p class="eyebrow">FROM BROWSING TO CHECKOUT</p><h2 id="ordering-title">How to order</h2></div>
       <ol class="order-steps">
         <li><span aria-hidden="true">01</span><h3>Choose a perfume</h3><p>Search by name, scent hint, or inspiration. Open a bottle to see its details.</p></li>
-        <li><span aria-hidden="true">02</span><h3>Review your bag</h3><p>Adjust quantities and check your subtotal. Each perfume is ₱250.</p></li>
+        <li><span aria-hidden="true">02</span><h3>Review your bag</h3><p>Adjust quantities and check your subtotal.</p></li>
         <li><span aria-hidden="true">03</span><h3>Place your order</h3><p>Enter your delivery details, send your order, and save the reference to check its status.</p></li>
       </ol>
     </div>
@@ -83,7 +87,7 @@
     <div class="wrap section-space">
       <p class="eyebrow">ORDERING HELP</p>
       <h2 id="faq-title">Frequently asked questions</h2>
-      <details><summary>How much is each perfume?</summary><p>Each perfume is ₱250. The shop reviews your order and confirms delivery fees and payment.</p></details>
+      <details><summary>Where can I see prices?</summary><p>Each perfume shows its current price in the collection. Review your subtotal and delivery fee at checkout.</p></details>
       <details><summary>How do I place an order?</summary><p>Add your fragrances to the bag, enter your delivery details at checkout, and submit your order.</p></details>
       <details><summary>Where can I see my order status?</summary><p>Save your order reference after checkout and enter it under <a href="#track">Track order</a><a href="https://the-vinity-orders.jeffreysimbahon14.chatgpt.site/account">Sign in</a>.</p></details>
     </div>

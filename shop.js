@@ -1,10 +1,10 @@
-const price = 250;
 const orderService = 'https://the-vinity-orders.jeffreysimbahon14.chatgpt.site';
 const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat('en-PH', {
   style: 'currency', currency: 'PHP', maximumFractionDigits: 0
 }).format(value);
 const products = new Map(catalog.map(([id, name, family, inspiration, hints, collection]) => [id, {id, name, family, inspiration, hints, collection}]));
+let inventory = new Map();
 const families = ['Floral', 'Fresh', 'Fruity', 'Sweet', 'Warm', 'Other'];
 const drawer = $('#bag-dialog');
 const productDialog = $('#product-dialog');
@@ -44,7 +44,7 @@ function updateCount() {
 
 function changeQuantity(id, change) {
   const qty = (bag.get(id) || 0) + change;
-  if (qty > 99) return;
+  if (change > 0 && qty > (inventory.get(id)?.limit ?? 0)) return;
   if (qty > 0) bag.set(id, qty);
   else bag.delete(id);
   saveBag();
@@ -64,7 +64,27 @@ function scentDetails({inspiration, hints}) {
 }
 
 function addButton({id, name}) {
-  return `<button type="button" data-add="${id}" aria-label="Add ${name} to bag">Add to bag</button>`;
+  const entry = inventory.get(id);
+  const available = entry?.limit > 0;
+  const label = available ? 'Add to bag' : entry?.availability ?? 'Checking stock';
+  return `<button type="button" data-add="${id}" ${available ? `aria-label="Add ${name} to bag"` : 'disabled'}>${label}</button>`;
+}
+
+function displayPrice(id) {
+  const entry = inventory.get(id);
+  return entry ? money(entry.price) : '—';
+}
+
+async function refreshInventory() {
+  const response = await fetch(orderService + '/api/inventory',{signal:AbortSignal.timeout(10000)});
+  if (!response.ok) throw new Error('Inventory is unavailable.');
+  const result = await response.json();
+  const entries = new Map(result.products.map((entry) => [entry.id,entry]));
+  if ([...products.keys()].some((id) => !entries.has(id))) throw new Error('Inventory is unavailable.');
+  inventory = entries;
+  $('#inventory-message').hidden = true;
+  renderProducts();
+  if (productDialog.open) renderProduct(products.get(Number(productDialog.dataset.product)));
 }
 
 function renderProducts() {
@@ -95,7 +115,7 @@ function renderProducts() {
         <span>View details <span aria-hidden="true">↗</span></span>
       </button><div class="card-body"><p class="family">${family}</p><h3>${name}</h3>
       ${scentDetails(product)}
-      <div class="card-bottom"><strong>${money(price)}</strong>${addButton(product)}</div></div></article>`;
+      <div class="card-bottom"><strong>${displayPrice(id)}</strong>${addButton(product)}</div></div></article>`;
     }).join('');
     const remaining = group.length - limit;
     const more = remaining > 0 ? `<button class="secondary load-more" type="button" data-more="${collection}">Show more ${collection} <span aria-hidden="true">↓</span></button>` : '';
@@ -105,20 +125,26 @@ function renderProducts() {
   }).join('') || '<p class="empty">No perfumes match these filters. Try another search or collection.</p>';
 }
 
-function showProduct(product) {
+function renderProduct(product) {
   const {id, name, family, collection} = product;
   $('#product-details').innerHTML = `<div class="product-photo"><img src="assets/${id}.svg" alt="${name} perfume bottle"></div>
     <div class="product-copy"><p class="family">${collection} · ${family}</p>
     <h2 id="product-title">${name}</h2>${scentDetails(product)}
-    <div class="card-bottom"><strong>${money(price)}</strong>${addButton(product)}</div>
+    <div class="card-bottom"><strong>${displayPrice(id)}</strong>${addButton(product)}</div>
     <p id="product-feedback" role="status"></p></div>`;
+}
+
+function showProduct(product) {
+  productDialog.dataset.product = product.id;
+  renderProduct(product);
   productDialog.showModal();
 }
 
 function addToBag(id) {
   const feedback = productDialog.open ? $('#product-feedback') : null;
-  if (bag.get(id) === 99) {
-    const message = 'You can add up to 99 of this perfume.';
+  const limit = inventory.get(id)?.limit ?? 0;
+  if ((bag.get(id) ?? 0) >= limit) {
+    const message = limit ? `You can add up to ${limit} of this perfume.` : 'This perfume is currently unavailable.';
     if (feedback) feedback.textContent = message;
     else announce(message);
     return;
@@ -128,8 +154,14 @@ function addToBag(id) {
   announce(products.get(id).name + ' added to your bag.');
 }
 
+function bagSubtotal() {
+  if (!inventory.size) return null;
+  return [...bag].reduce((sum,[id,qty]) => sum + qty * inventory.get(id).price,0);
+}
+
 function subtotal() {
-  return `<div class="subtotal"><span>Items subtotal</span><strong>${money(totalItems() * price)}</strong></div>`;
+  const amount = bagSubtotal();
+  return `<div class="subtotal"><span>Items subtotal</span><strong>${amount === null ? 'Checking prices' : money(amount)}</strong></div>`;
 }
 
 function deliveryText(fee) {
@@ -153,7 +185,7 @@ async function deliveryFee() {
   return fee;
 }
 
-function renderBag() {
+function renderBag(notice = '') {
   stage = 'bag';
   $('#bag-title').textContent = 'Your bag';
   if (!bag.size) {
@@ -162,11 +194,17 @@ function renderBag() {
   }
   content.innerHTML = [...bag].map(([id, qty]) => {
     const {name} = products.get(id);
-    return `<div class="order-row"><span class="line-name">${name}</span>
+    const entry = inventory.get(id);
+    const limit = entry?.limit ?? 0;
+    const unavailable = entry && qty > limit;
+    return `<div class="order-row"><span class="line-name">${name}
+      ${unavailable ? `<small>${limit ? `Only ${limit} available` : entry.availability}</small>
+      <button class="secondary" type="button" data-remove="${id}" aria-label="Remove ${name} from bag">Remove</button>` : ''}</span>
       <div class="stepper"><button type="button" data-id="${id}" data-change="-1" aria-label="Remove one ${name}">−</button>
-      <span aria-label="Quantity">${qty}</span><button type="button" data-id="${id}" data-change="1" aria-label="Add one ${name}" ${qty >= 99 ? 'disabled' : ''}>+</button></div>
-      <strong>${money(qty * price)}</strong></div>`;
-  }).join('') + subtotal() + '<button class="primary" type="button" data-action="checkout">Continue to checkout</button>';
+      <span aria-label="Quantity">${qty}</span><button type="button" data-id="${id}" data-change="1" aria-label="Add one ${name}" ${qty >= limit ? 'disabled' : ''}>+</button></div>
+      <strong>${entry ? money(qty * entry.price) : '—'}</strong></div>`;
+  }).join('') + subtotal() + '<p id="bag-feedback" class="order-note" role="status"></p><button class="primary" type="button" data-action="checkout">Continue to checkout</button>';
+  $('#bag-feedback').textContent = notice;
 }
 
 function renderCheckout() {
@@ -189,14 +227,16 @@ function renderCheckout() {
 function renderRequest(fee, notice = '') {
   stage = 'request';
   $('#bag-title').textContent = 'Order request';
-  const lines = [...bag].map(([id, qty]) =>
+  const items = [...bag].map(([id,qty]) => ({id,qty,price:inventory.get(id).price}));
+  const lines = items.map(({id,qty,price}) =>
     `${qty} × ${products.get(id).name} · ${money(qty * price)}`
   );
-  const order = {...details, items:[...bag].map(([id, qty]) => ({id,qty}))};
+  const order = {...details, items:items.map(({id,qty}) => ({id,qty}))};
   const fingerprint = JSON.stringify(order);
   if (orderDraft?.fingerprint !== fingerprint) orderDraft = {id:crypto.randomUUID(),fingerprint};
   orderDraft.deliveryFee = fee;
-  const amount = totalItems() * price;
+  orderDraft.items = items;
+  const amount = bagSubtotal();
   const request = [...lines, '', 'Name: ' + details.name, 'Mobile: ' + details.phone, 'Delivery address: ' + details.address].join('\n');
   orderDraft.requestText = ['The Vinity order request',request,'', 'Items subtotal: ' + money(amount), 'Delivery: ' + deliveryText(fee),
     'Total to pay: ' + (fee == null ? 'Pending delivery fee' : money(amount + fee)), 'Payment: Cash on delivery'].join('\n');
@@ -242,7 +282,7 @@ async function sendOrder() {
   for (const button of buttons) button.disabled = true;
   feedback.textContent = 'Submitting your order…';
   try {
-    const items = [...bag].map(([id,qty]) => ({id,qty}));
+    const items = orderDraft.items;
     const order = await orderApi('orders', {id:orderDraft.id,...details,items,delivery_fee:orderDraft.deliveryFee});
     for (const {id,qty} of items) {
       const remaining = (bag.get(id) || 0) - qty;
@@ -263,18 +303,30 @@ async function sendOrder() {
     content.querySelector('input').value = order.id;
     $('#track-receipt').addEventListener('click',() => drawer.close());
     $('#track-receipt').focus();
+    loadInventory();
   } catch (error) {
-    if (error.code === 'delivery_fee_changed') {
+    if (error.code === 'inventory_changed' || error.code === 'delivery_fee_changed') {
       try {
-        renderRequest(await deliveryFee(),error.message);
+        const [fee] = await Promise.all([deliveryFee(),refreshInventory()]);
+        reviewUpdatedBag(fee,error.message);
       } catch {
-        feedback.textContent = 'The delivery fee changed. Return to Edit details and review again.';
+        feedback.textContent = 'The order changed. Use Edit details to review it again.';
       }
     } else feedback.textContent = error.message;
   } finally {
     for (const button of buttons) button.disabled = false;
     sendingOrder = false;
   }
+}
+
+function reviewUpdatedBag(fee, notice = '') {
+  if ([...bag].some(([id,qty]) => qty > inventory.get(id).limit)) {
+    renderBag('Some quantities are no longer available. Adjust your bag before checking out.');
+    $('#bag-feedback').setAttribute('tabindex','-1');
+    $('#bag-feedback').focus();
+    return;
+  }
+  renderRequest(fee,notice);
 }
 
 try { $('#order-reference').value = localStorage.getItem('vinity-order-reference') || ''; } catch {}
@@ -315,6 +367,13 @@ $('#filters').innerHTML = ['All scents', ...families].map((family) =>
 $('.catalog-filters').addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (!button) return;
+  if (button.dataset.remove) {
+    bag.delete(Number(button.dataset.remove));
+    saveBag();
+    renderBag();
+    content.querySelector('button')?.focus();
+    return;
+  }
   if (button.dataset.scent) selected = button.dataset.scent;
   else if (button.dataset.collection) selectedCollection = button.dataset.collection;
   else if (button.id === 'clear-filters') {
@@ -425,12 +484,12 @@ content.addEventListener('submit', async (event) => {
   const fields = Array.from(form.elements);
   for (const field of fields) field.disabled = true;
   const feedback = $('#checkout-feedback');
-  feedback.textContent = 'Checking delivery fee…';
+  feedback.textContent = 'Checking prices, stock and delivery…';
   try {
-    const fee = await deliveryFee();
-    if (drawer.open && form.isConnected) renderRequest(fee);
+    const [fee] = await Promise.all([deliveryFee(),refreshInventory()]);
+    if (drawer.open && form.isConnected) reviewUpdatedBag(fee);
   } catch {
-    feedback.textContent = 'Could not check the delivery fee. Try reviewing your order again.';
+    feedback.textContent = 'Could not check current prices, stock and delivery. Try reviewing your order again.';
   } finally {
     for (const field of fields) field.disabled = false;
   }
@@ -438,4 +497,18 @@ content.addEventListener('submit', async (event) => {
 
 updateCount();
 renderProducts();
+const retryInventory = $('#retry-inventory');
+async function loadInventory() {
+  retryInventory.disabled = true;
+  try {
+    await refreshInventory();
+    if (drawer.open && stage === 'bag') renderBag();
+  } catch {
+    $('#inventory-message').hidden = false;
+  } finally {
+    retryInventory.disabled = false;
+  }
+}
+retryInventory.addEventListener('click',loadInventory);
+loadInventory();
 

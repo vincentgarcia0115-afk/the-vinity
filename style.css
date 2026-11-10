@@ -146,6 +146,8 @@ dialog::backdrop { background: #2b1b2a85; }
 .order-totals dd { margin: 0; text-align: right; font-weight: 600; }
 .order-totals div:last-child { font-weight: 700; }
 .line-name { flex: 1; }
+.line-name small { display: block; color: var(--muted); }
+.line-name [data-remove] { margin-top: 4px; }
 .stepper button { width: 44px; padding: 0; }
 .checkout { display: grid; gap: 9px; }
 .checkout label,.receipt { display: grid; gap: 5px; font-weight: 650; }
