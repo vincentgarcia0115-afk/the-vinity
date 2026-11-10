@@ -248,6 +248,7 @@ function renderCheckout() {
       <label>Mobile number <input name="phone" type="tel" autocomplete="tel" required maxlength="30"></label>
       <label>Delivery address <textarea name="address" autocomplete="street-address" required maxlength="400"></textarea></label>
       <p>Pay by cash on delivery. You’ll see the delivery fee and total on the next step when a fee is available.</p>
+      <p>We use these details to fulfill your order. <a href="${orderService}/support#privacy" target="_blank" rel="noopener">Read the privacy notice</a>.</p>
       <button type="submit" class="primary">Review order</button>
       <p id="checkout-feedback" role="status"></p>
     </form>`;
