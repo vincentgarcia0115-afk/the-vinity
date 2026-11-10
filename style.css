@@ -235,8 +235,10 @@ dialog::backdrop { background: #25122a9e; }
 @media (max-width: 360px) {
   .brand { font-size: 23px; }
   .nav-actions { gap: 4px; }
+  .nav-links { gap: 0 6px; }
   .bag > svg { display: none; }
 }
+@media (max-width: 315px) { html { scroll-padding-top: 156px; } }
 @media (prefers-reduced-motion: no-preference) {
   .hero-setting img { animation: studio-arrival 650ms var(--ease-out) both; }
   @keyframes studio-arrival { from { opacity: .8; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
