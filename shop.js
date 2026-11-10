@@ -1,4 +1,5 @@
 const orderService = 'https://the-vinity-orders.jeffreysimbahon14.chatgpt.site';
+const accountUrl = orderService + '/account';
 const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat('en-PH', {
   style: 'currency', currency: 'PHP', maximumFractionDigits: 0
@@ -19,6 +20,25 @@ let stage = 'bag';
 let sendingOrder = false;
 let orderDraft;
 let noticeTimer;
+let checkoutProof;
+let resumeBag = false;
+const handoff = new URLSearchParams(location.hash.slice(1));
+const incomingProof = handoff.get('account_checkout');
+if (incomingProof !== null) {
+  history.replaceState(null,'',location.pathname + location.search);
+  if (/^[0-9a-f]{64}\.\d{10}\.[0-9a-f]{64}$/.test(incomingProof)) {
+    checkoutProof = incomingProof;
+    resumeBag = handoff.get('open_bag') === '1';
+    try { sessionStorage.setItem('vinity-checkout-proof',checkoutProof); } catch {}
+  }
+} else {
+  try { checkoutProof = sessionStorage.getItem('vinity-checkout-proof') || undefined; } catch {}
+}
+
+function clearCheckoutProof() {
+  checkoutProof = undefined;
+  try { sessionStorage.removeItem('vinity-checkout-proof'); } catch {}
+}
 
 // Only product IDs and quantities are stored on this device.
 try {
@@ -214,6 +234,9 @@ function renderBag(notice = '') {
       <strong>${entry ? money(qty * entry.price) : '—'}</strong></div>`;
   }).join('') + subtotal() + '<p id="bag-feedback" class="order-note" role="status"></p><button class="primary" type="button" data-action="checkout">Continue to checkout</button>';
   $('#bag-feedback').textContent = notice;
+  content.insertAdjacentHTML('beforeend',checkoutProof
+    ? '<p class="order-note">This order will be saved to your account.</p><button class="secondary" type="button" data-action="guest">Continue as guest</button>'
+    : `<p class="order-note">Want this order in your account? <a href="${accountUrl}#checkout">Sign in to link it</a>.</p>`);
 }
 
 function renderCheckout() {
@@ -292,7 +315,7 @@ async function sendOrder() {
   feedback.textContent = 'Submitting your order…';
   try {
     const items = orderDraft.items;
-    const order = await orderApi('orders', {id:orderDraft.id,...details,items,delivery_fee:orderDraft.deliveryFee});
+    const order = await orderApi('orders', {id:orderDraft.id,...details,items,delivery_fee:orderDraft.deliveryFee,checkout_proof:checkoutProof});
     for (const {id,qty} of items) {
       const remaining = (bag.get(id) || 0) - qty;
       if (remaining > 0) bag.set(id,remaining);
@@ -308,6 +331,7 @@ async function sendOrder() {
       <label class="receipt">Order reference<input readonly></label>
       ${orderTotals(order.subtotal, order.delivery_fee)}
       <p class="order-note">Cash on delivery · ${order.payment_status || 'Unpaid'}</p>
+      ${order.account_linked ? `<p class="order-note">Saved to <a href="${accountUrl}#history-title">your account</a>.</p>` : ''}
       <div class="actions"><a class="primary" id="track-receipt" href="#track">Track this order</a>
       <button class="secondary" id="download-confirmation" type="button">Download confirmation</button></div>`;
     content.querySelector('input').value = order.id;
@@ -327,7 +351,12 @@ async function sendOrder() {
     $('#track-receipt').focus();
     loadInventory();
   } catch (error) {
-    if (error.code === 'inventory_changed' || error.code === 'delivery_fee_changed') {
+    if (error.code === 'checkout_session_expired') {
+      clearCheckoutProof();
+      renderBag(error.message);
+      $('#bag-feedback').setAttribute('tabindex','-1');
+      $('#bag-feedback').focus();
+    } else if (error.code === 'inventory_changed' || error.code === 'delivery_fee_changed') {
       try {
         const [fee] = await Promise.all([deliveryFee(),refreshInventory()]);
         reviewUpdatedBag(fee,error.message);
@@ -462,6 +491,10 @@ content.addEventListener('click', async (event) => {
     case 'checkout':
       renderCheckout();
       break;
+    case 'guest':
+      clearCheckoutProof();
+      renderCheckout();
+      break;
     case 'browse':
       drawer.close();
       $('#collection').scrollIntoView();
@@ -534,5 +567,9 @@ async function loadInventory() {
   }
 }
 retryInventory.addEventListener('click',loadInventory);
+if (resumeBag && bag.size) {
+  renderBag();
+  drawer.showModal();
+}
 loadInventory();
 
