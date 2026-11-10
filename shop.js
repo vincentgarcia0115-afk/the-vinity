@@ -154,9 +154,10 @@ function renderProduct(product) {
     <p id="product-feedback" role="status"></p></div>`;
 }
 
-function showProduct(product) {
+function showProduct(product, fromPointer) {
   productDialog.dataset.product = product.id;
   renderProduct(product);
+  productDialog.toggleAttribute('data-pointer-entry',fromPointer);
   productDialog.showModal();
 }
 
@@ -406,7 +407,7 @@ $('#track-form').addEventListener('submit',async (event) => {
   }
 });
 
-$('#hero-feature').addEventListener('click', () => showProduct(products.get(11)));
+$('#hero-feature').addEventListener('click', (event) => showProduct(products.get(11),event.detail > 0));
 
 const navLinks = document.querySelectorAll('.nav-links a');
 function syncNavigation() {
@@ -447,7 +448,7 @@ $('#search').addEventListener('input', renderProducts);
 $('#products').addEventListener('click', (event) => {
   const button = event.target.closest('button');
   if (!button) return;
-  if (button.dataset.details) showProduct(products.get(Number(button.dataset.details)));
+  if (button.dataset.details) showProduct(products.get(Number(button.dataset.details)),event.detail > 0);
   else if (button.dataset.add) addToBag(Number(button.dataset.add));
   else if (button.dataset.more) {
     const collection = button.dataset.more;
@@ -464,8 +465,9 @@ productDialog.addEventListener('click', (event) => {
   const button = event.target.closest('[data-add]');
   if (button) addToBag(Number(button.dataset.add));
 });
-$('#open-bag').addEventListener('click', () => {
+$('#open-bag').addEventListener('click', (event) => {
   renderBag();
+  drawer.toggleAttribute('data-pointer-entry',event.detail > 0);
   drawer.showModal();
 });
 $('#close-bag').addEventListener('click', () => drawer.close());

@@ -251,8 +251,24 @@ dialog::backdrop { background: #25122a9e; }
 @media (prefers-reduced-motion: no-preference) {
   .hero-scene { animation: studio-arrival 650ms var(--ease-out) both; }
   @keyframes studio-arrival { from { opacity: .8; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
+  .hero-scene::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg,transparent 28%,#ffd0ef29 49%,transparent 69%);
+    animation: studio-light 760ms var(--ease-out) both;
+  }
+  @keyframes studio-light { from { opacity: .75; transform: translateX(-40%); } to { opacity: 0; transform: translateX(34%); } }
+  #product-dialog[open][data-pointer-entry] { animation: product-arrival 200ms var(--ease-out) both; }
+  #bag-dialog[open][data-pointer-entry] { animation: bag-arrival 230ms var(--ease-out) both; }
+  dialog[open][data-pointer-entry]::backdrop { animation: backdrop-arrival 180ms var(--ease-out); }
+  @keyframes product-arrival { from { opacity: .72; transform: translateY(8px) scale(.98); } }
+  @keyframes bag-arrival { from { opacity: .8; transform: translateX(28px); } }
+  @keyframes backdrop-arrival { from { opacity: 0; } }
+  .notice { opacity: 1; translate: 0 0; transition: opacity 130ms ease,translate 160ms var(--ease-out); }
+  .notice:empty { display: block; opacity: 0; translate: 0 6px; }
 }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .primary,.secondary,.bag,.card-bottom button { transition: background-color 150ms ease,transform 130ms var(--ease-out); }
   .primary:active,.secondary:enabled:active,.bag:active,.card-bottom button:enabled:active { transform: scale(.975); }
+  .card-image img { transition: transform 220ms var(--ease-out); }
+  .card-image:hover img { transform: scale(1.045); }
 }
