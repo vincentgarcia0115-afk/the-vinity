@@ -16,6 +16,14 @@ let selected = 'All scents';
 let selectedCollection = 'All perfumes';
 const pageSize = 6;
 const visibleCounts = new Map();
+let shownProducts = [];
+const catalogObserver = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+  for (const {isIntersecting,target} of entries) {
+    if (isIntersecting && target !== document.activeElement && !drawer.open && !productDialog.open) {
+      loadMoreProducts(target);
+    }
+  }
+}, {rootMargin:'0px 0px 120px'}) : null;
 let stage = 'bag';
 let sendingOrder = false;
 let orderDraft;
@@ -118,9 +126,36 @@ function renderFeatured() {
   }).join('');
 }
 
+function productCard(product) {
+  const {id, name, family} = product;
+  return `<article class="card"><button class="card-image" type="button" data-details="${id}" aria-label="View details for ${name}">
+    <img src="assets/${id}.svg" alt="" loading="lazy">
+    <span>View details <span aria-hidden="true">↗</span></span>
+    </button><div class="card-body"><p class="family">${family}</p><h3>${name}</h3>
+    ${scentDetails(product)}
+    <div class="card-bottom"><strong>${displayPrice(id)}</strong>${addButton(product)}</div></div></article>`;
+}
+
+function loadMoreProducts(button, manual = false) {
+  if (!button.isConnected) return;
+  const collection = button.dataset.more;
+  const grid = button.previousElementSibling;
+  const start = grid.childElementCount;
+  const group = shownProducts.filter((product) => product.collection === collection);
+  const batch = group.slice(start,start + pageSize);
+  grid.insertAdjacentHTML('beforeend',batch.map(productCard).join(''));
+  visibleCounts.set(collection,grid.childElementCount);
+  catalogObserver?.unobserve(button);
+  if (grid.childElementCount >= group.length) button.remove();
+  else catalogObserver?.observe(button);
+  if (manual) grid.children[start]?.querySelector('[data-details]').focus();
+  else for (const card of Array.from(grid.children).slice(start)) card.classList.add('catalog-arrival');
+}
+
 function renderProducts() {
+  catalogObserver?.disconnect();
   const query = $('#search').value.trim().toLowerCase();
-  const shown = [...products.values()].filter(({name, family, inspiration, hints, collection}) =>
+  const shown = shownProducts = [...products.values()].filter(({name, family, inspiration, hints, collection}) =>
     (selectedCollection === 'All perfumes' || selectedCollection === collection) &&
     (selected === 'All scents' || selected === family) &&
     [name, family, inspiration, ...hints].some((value) => value.toLowerCase().includes(query))
@@ -139,21 +174,14 @@ function renderProducts() {
     if (!group.length) return '';
     const heading = collection === 'For Him' ? 'for-him' : 'for-her';
     const limit = query ? group.length : visibleCounts.get(collection) ?? pageSize;
-    const cards = group.slice(0, limit).map((product) => {
-      const {id, name, family} = product;
-      return `<article class="card"><button class="card-image" type="button" data-details="${id}" aria-label="View details for ${name}">
-        <img src="assets/${id}.svg" alt="" loading="lazy">
-        <span>View details <span aria-hidden="true">↗</span></span>
-      </button><div class="card-body"><p class="family">${family}</p><h3>${name}</h3>
-      ${scentDetails(product)}
-      <div class="card-bottom"><strong>${displayPrice(id)}</strong>${addButton(product)}</div></div></article>`;
-    }).join('');
+    const cards = group.slice(0, limit).map(productCard).join('');
     const remaining = group.length - limit;
     const more = remaining > 0 ? `<button class="secondary load-more" type="button" data-more="${collection}">Show more ${collection} <span aria-hidden="true">↓</span></button>` : '';
     return `<section class="catalog-group" aria-labelledby="${heading}">
       <div class="group-header"><h3 class="group-heading" id="${heading}">${collection}</h3><span>${group.length} perfumes</span></div>
       <div class="grid">${cards}</div>${more}</section>`;
   }).join('') || '<p class="empty">No perfumes match these filters. Try another search or collection.</p>';
+  for (const button of $('#products').querySelectorAll('[data-more]')) catalogObserver?.observe(button);
 }
 
 function renderProduct(product) {
@@ -461,14 +489,7 @@ document.querySelectorAll('#products,#featured-products').forEach((list) => list
   if (!button) return;
   if (button.dataset.details) showProduct(products.get(Number(button.dataset.details)),event.detail > 0);
   else if (button.dataset.add) addToBag(Number(button.dataset.add));
-  else if (button.dataset.more) {
-    const collection = button.dataset.more;
-    const limit = visibleCounts.get(collection) ?? pageSize;
-    visibleCounts.set(collection, limit + pageSize);
-    renderProducts();
-    const group = collection === 'For Him' ? '#for-him' : '#for-her';
-    $(group).closest('section').querySelectorAll('[data-details]')[limit]?.focus();
-  }
+  else if (button.dataset.more) loadMoreProducts(button,true);
 }));
 document.querySelectorAll('a[data-family]').forEach((link) => link.addEventListener('click', () => {
   selected = link.dataset.family;

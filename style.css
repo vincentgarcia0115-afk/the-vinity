@@ -249,6 +249,8 @@ dialog::backdrop { background: #25122a9e; }
 }
 @media (max-width: 315px) { html { scroll-padding-top: 156px; } }
 @media (prefers-reduced-motion: no-preference) {
+  .catalog-arrival { animation: catalog-arrival 260ms var(--ease-out); }
+  @keyframes catalog-arrival { from { opacity: .5; transform: translateY(8px); } }
   .hero-scene { animation: studio-arrival 650ms var(--ease-out) both; }
   @keyframes studio-arrival { from { opacity: .8; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
   .hero-scene::after {
