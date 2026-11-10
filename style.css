@@ -319,6 +319,8 @@ dialog::backdrop { background: #25122a9e; }
 .scent-edit p { max-width: 45ch; margin: 12px 0 15px; color: var(--muted); }
 .scent-edit-photo { display: grid; place-items: center; min-height: 205px; padding: 18px; background: #321137 url("assets/vinity-studio.webp") 50% 70%/cover; }
 .scent-edit-photo img { height: clamp(160px,23vw,268px); max-width: 85%; object-fit: contain; transform: rotate(-13deg); filter: drop-shadow(12px 15px 12px #240e388c); }
+.collection-tile,.featured-card,.scent-edit-photo { border-radius: 14px; }
+.collection-tile .tile-action,.featured-image,.featured-card [data-add] { border-radius: 8px; }
 .footer { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; align-items: start; padding-block: 34px; }
 .footer nav { display: grid; gap: 7px; }
 .footer nav strong { color: var(--rose); font-size: 13px; }
