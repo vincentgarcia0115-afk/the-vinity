@@ -11,7 +11,8 @@ const drawer = $('#bag-dialog');
 const productDialog = $('#product-dialog');
 const content = $('#drawer-content');
 const bag = new Map();
-const details = {name:'', phone:'', address:''};
+const details = {name:'',phone:'',street:'',barangay:'',city:'',province:'',postal:''};
+const uncheckedItems = new Set();
 let selected = 'All scents';
 let selectedCollection = 'All perfumes';
 const pageSize = 6;
@@ -55,6 +56,23 @@ try {
     if (products.has(id) && Number.isInteger(qty) && qty > 0 && qty <= 99) bag.set(id, qty);
   }
 } catch {}
+try {
+  for (const id of JSON.parse(sessionStorage.getItem('vinity-unchecked-items') || '[]')) {
+    if (bag.has(id)) uncheckedItems.add(id);
+  }
+} catch {}
+
+function selectedItems() {
+  return [...bag].filter(([id]) => !uncheckedItems.has(id));
+}
+
+function saveSelection() {
+  try { sessionStorage.setItem('vinity-unchecked-items',JSON.stringify([...uncheckedItems])); } catch {}
+}
+
+function deliveryAddress() {
+  return [details.street,details.barangay,[details.city,details.province,details.postal].filter(Boolean).join(', ')].join('\n');
+}
 
 function announce(message) {
   $('#notice').textContent = message;
@@ -79,6 +97,8 @@ function changeQuantity(id, change) {
 }
 
 function saveBag() {
+  for (const id of uncheckedItems) if (!bag.has(id)) uncheckedItems.delete(id);
+  saveSelection();
   try {
     localStorage.setItem('vinity-bag', JSON.stringify([...bag]));
   } catch {}
@@ -216,12 +236,12 @@ function addToBag(id) {
 
 function bagSubtotal() {
   if (!inventory.size) return null;
-  return [...bag].reduce((sum,[id,qty]) => sum + qty * inventory.get(id).price,0);
+  return selectedItems().reduce((sum,[id,qty]) => sum + qty * inventory.get(id).price,0);
 }
 
 function subtotal() {
   const amount = bagSubtotal();
-  return `<div class="subtotal"><span>Items subtotal</span><strong>${amount === null ? 'Checking prices' : money(amount)}</strong></div>`;
+  return `<div class="subtotal"><span>Selected items subtotal</span><strong>${amount === null ? 'Checking prices' : money(amount)}</strong></div>`;
 }
 
 function deliveryText(fee) {
@@ -261,12 +281,12 @@ function renderBag(notice = '') {
     content.innerHTML = '<p class="order-note">Your bag is empty.</p><button class="primary" type="button" data-action="browse">Browse perfumes</button>';
     return;
   }
-  content.innerHTML = [...bag].map(([id, qty]) => {
+  content.innerHTML = '<label class="bag-select-all"><input type="checkbox" data-select-all> Select all items</label>' + [...bag].map(([id, qty]) => {
     const {name} = products.get(id);
     const entry = inventory.get(id);
     const limit = entry?.limit ?? 0;
     const unavailable = entry && qty > limit;
-    return `<div class="order-row"><span class="line-name">${name}
+    return `<div class="order-row"><input type="checkbox" data-select-item="${id}" aria-label="Select ${name}" ${uncheckedItems.has(id) ? '' : 'checked'}><span class="line-name">${name}
       ${unavailable ? `<small>${limit ? `Only ${limit} available` : entry.availability}</small>
       <button class="secondary" type="button" data-remove="${id}" aria-label="Remove ${name} from bag">Remove</button>` : ''}</span>
       <div class="stepper"><button type="button" data-id="${id}" data-change="-1" aria-label="Remove one ${name}">−</button>
@@ -277,16 +297,34 @@ function renderBag(notice = '') {
   content.insertAdjacentHTML('beforeend',checkoutProof
     ? '<p class="order-note">This order will be saved to your account.</p><button class="secondary" type="button" data-action="guest">Continue as guest</button>'
     : `<p class="order-note">Want this order in your account? <a href="${accountUrl}#checkout">Sign in to link it</a>.</p>`);
+  syncBagSelection();
+}
+
+function syncBagSelection() {
+  const count = selectedItems().length;
+  const selectAll = content.querySelector('[data-select-all]');
+  selectAll.checked = count === bag.size;
+  selectAll.indeterminate = count > 0 && count < bag.size;
+  const amount = bagSubtotal();
+  content.querySelector('.subtotal strong').textContent = amount === null ? 'Checking prices' : money(amount);
+  for (const button of content.querySelectorAll('[data-action="checkout"],[data-action="guest"]')) button.disabled = count === 0;
 }
 
 function renderCheckout() {
   stage = 'checkout';
-  $('#bag-title').textContent = 'Checkout';
+  $('#bag-title').textContent = 'Delivery address';
   content.innerHTML = `<button class="secondary" type="button" data-action="bag">← Back to bag</button>
+    <p class="checkout-step">Step 1 of 2 · Address</p>
     ${subtotal()}<form class="checkout">
       <label>Full name <input name="name" autocomplete="name" required maxlength="100"></label>
       <label>Mobile number <input name="phone" type="tel" autocomplete="tel" required maxlength="30"></label>
-      <label>Delivery address <textarea name="address" autocomplete="street-address" required maxlength="400"></textarea></label>
+      <label>House or unit number, street and subdivision <textarea name="street" autocomplete="street-address" required maxlength="140"></textarea></label>
+      <label>Barangay <input name="barangay" required maxlength="60"></label>
+      <div class="address-fields">
+        <label>City or municipality <input name="city" autocomplete="address-level2" required maxlength="65"></label>
+        <label>Province or Metro Manila <input name="province" autocomplete="address-level1" required maxlength="65"></label>
+      </div>
+      <label>Postal code (optional) <input name="postal" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{4}" maxlength="4"></label>
       <p>Pay by cash on delivery. You’ll see the delivery fee and total on the next step when a fee is available.</p>
       <p>We use these details to fulfill your order. <a href="${orderService}/support#privacy" target="_blank" rel="noopener">Read the privacy notice</a>.</p>
       <button type="submit" class="primary">Review order</button>
@@ -299,33 +337,43 @@ function renderCheckout() {
 
 function renderRequest(fee, notice = '') {
   stage = 'request';
-  $('#bag-title').textContent = 'Order request';
-  const items = [...bag].map(([id,qty]) => ({id,qty,price:inventory.get(id).price}));
+  $('#bag-title').textContent = 'Review checkout';
+  const items = selectedItems().map(([id,qty]) => ({id,qty,price:inventory.get(id).price}));
   const lines = items.map(({id,qty,price}) =>
     `${qty} × ${products.get(id).name} · ${money(qty * price)}`
   );
-  const order = {...details, items:items.map(({id,qty}) => ({id,qty}))};
+  const address = deliveryAddress();
+  const order = {name:details.name,phone:details.phone,address,items:items.map(({id,qty}) => ({id,qty}))};
   const fingerprint = JSON.stringify(order);
   if (orderDraft?.fingerprint !== fingerprint) orderDraft = {id:crypto.randomUUID(),fingerprint};
   orderDraft.deliveryFee = fee;
   orderDraft.items = items;
   const amount = bagSubtotal();
-  const request = [...lines, '', 'Name: ' + details.name, 'Mobile: ' + details.phone, 'Delivery address: ' + details.address].join('\n');
+  const request = [...lines, '', 'Name: ' + details.name, 'Mobile: ' + details.phone, 'Delivery address: ' + address].join('\n');
   orderDraft.requestText = ['The Vinity order request',request,'', 'Items subtotal: ' + money(amount), 'Delivery: ' + deliveryText(fee),
     'Total to pay: ' + (fee == null ? 'Pending delivery fee' : money(amount + fee)), 'Payment: Cash on delivery'].join('\n');
-  content.innerHTML = `<p class="order-note">Review your items and delivery details before placing your order.</p>
+  content.innerHTML = `<p class="checkout-step">Step 2 of 2 · Review and place order</p>
     <p class="order-note" id="request-status" role="status"></p>
+    <section class="checkout-panel"><div class="checkout-panel-heading"><h3>Delivery address</h3><button type="button" class="secondary" data-action="checkout">Edit address</button></div><p id="review-address"></p></section>
+    <section class="checkout-panel"><h3>Items to ship</h3><ul id="review-items"></ul></section>
+    <fieldset class="checkout-panel"><legend>Delivery option</legend><label class="checkout-choice"><input type="radio" name="shipping-option" checked> Standard delivery <strong>${deliveryText(fee)}</strong></label></fieldset>
+    <fieldset class="checkout-panel"><legend>Payment method</legend><label class="checkout-choice"><input type="radio" name="payment-option" checked> Cash on delivery</label></fieldset>
     ${orderTotals(amount, fee)}
-    <p class="order-note">Cash on delivery${fee == null ? ' · The shop will confirm your delivery fee and final total.' : ' · Pay when your order arrives.'}</p>
-    <pre class="order-text"></pre><div class="actions">
-      <button type="button" class="primary" data-action="send">Submit order</button>
+    <p class="order-note">${fee == null ? 'The shop will confirm your delivery fee and final total.' : 'Pay when your order arrives.'}</p>
+    <div class="actions">
+      <button type="button" class="primary" data-action="send">Place order</button>
       <button type="button" class="secondary" data-action="copy">Copy request</button>
       <button type="button" class="secondary" data-action="download">Download</button>
-      <button type="button" class="secondary" data-action="checkout">Edit details</button>
+      <button type="button" class="secondary" data-action="bag">Back to bag</button>
     </div>`;
   $('#request-status').textContent = notice;
-  content.querySelector('pre').textContent = request;
-  content.querySelector('.actions').firstElementChild.focus();
+  $('#review-address').textContent = [details.name + ' · ' + details.phone,address].join('\n');
+  for (const line of lines) {
+    const item = document.createElement('li');
+    item.textContent = line;
+    $('#review-items').append(item);
+  }
+  content.querySelector('[data-action="checkout"]').focus();
 }
 
 async function orderApi(path, data) {
@@ -356,7 +404,7 @@ async function sendOrder() {
   feedback.textContent = 'Submitting your order…';
   try {
     const items = orderDraft.items;
-    const order = await orderApi('orders', {id:orderDraft.id,...details,items,delivery_fee:orderDraft.deliveryFee,checkout_proof:checkoutProof});
+    const order = await orderApi('orders', {id:orderDraft.id,name:details.name,phone:details.phone,address:deliveryAddress(),items,delivery_fee:orderDraft.deliveryFee,checkout_proof:checkoutProof});
     for (const {id,qty} of items) {
       const remaining = (bag.get(id) || 0) - qty;
       if (remaining > 0) bag.set(id,remaining);
@@ -402,7 +450,7 @@ async function sendOrder() {
         const [fee] = await Promise.all([deliveryFee(),refreshInventory()]);
         reviewUpdatedBag(fee,error.message);
       } catch {
-        feedback.textContent = 'The order changed. Use Edit details to review it again.';
+        feedback.textContent = 'The order changed. Use Edit address to review it again.';
       }
     } else feedback.textContent = error.message;
   } finally {
@@ -412,7 +460,7 @@ async function sendOrder() {
 }
 
 function reviewUpdatedBag(fee, notice = '') {
-  if ([...bag].some(([id,qty]) => qty > inventory.get(id).limit)) {
+  if (selectedItems().some(([id,qty]) => qty > inventory.get(id).limit)) {
     renderBag('Some quantities are no longer available. Adjust your bag before checking out.');
     $('#bag-feedback').setAttribute('tabindex','-1');
     $('#bag-feedback').focus();
@@ -564,6 +612,23 @@ content.addEventListener('input', (event) => {
   if (stage === 'checkout') event.target.setCustomValidity('');
 });
 
+content.addEventListener('change',(event) => {
+  const field = event.target;
+  if (field.hasAttribute('data-select-all')) {
+    uncheckedItems.clear();
+    for (const checkbox of content.querySelectorAll('[data-select-item]')) {
+      checkbox.checked = field.checked;
+      if (!field.checked) uncheckedItems.add(Number(checkbox.dataset.selectItem));
+    }
+  } else if (field.dataset.selectItem) {
+    const id = Number(field.dataset.selectItem);
+    if (field.checked) uncheckedItems.delete(id);
+    else uncheckedItems.add(id);
+  } else return;
+  saveSelection();
+  syncBagSelection();
+});
+
 content.addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.target;
@@ -572,7 +637,7 @@ content.addEventListener('submit', async (event) => {
   for (const key of Object.keys(details)) {
     const field = form.elements[key];
     details[key] = field.value.trim();
-    const valid = details[key] && (key !== 'phone' || /^[+0-9(). -]+$/.test(details[key]) && details[key].replace(/\D/g, '').length >= 7);
+    const valid = key === 'postal' || details[key] && (key !== 'phone' || /^[+0-9(). -]+$/.test(details[key]) && details[key].replace(/\D/g, '').length >= 7);
     if (!valid) {
       field.setCustomValidity(key === 'phone' ? 'Enter a valid mobile number.' : 'Fill out this field.');
       field.reportValidity();

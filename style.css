@@ -172,6 +172,17 @@ dialog::backdrop { background: #25122a9e; }
 .stepper { flex: 0 0 auto; }
 .stepper button { width: 44px; padding: 0; }
 .checkout { display: grid; gap: 10px; }
+.bag-select-all { display: flex; gap: 8px; align-items: center; min-height: 44px; border-bottom: 1px solid var(--line); }
+.bag-select-all input,.order-row > input,.checkout-choice input { accent-color: var(--accent); inline-size: 18px; block-size: 18px; flex: 0 0 auto; margin: 0; }
+.address-fields { display: grid; gap: 10px; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.checkout-step { color: var(--accent); font-size: 14px; font-weight: 700; margin-block: 10px; }
+.checkout-panel { min-width: 0; margin: 12px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.checkout-panel legend,.checkout-panel h3 { font-weight: 700; }
+.checkout-panel-heading,.checkout-choice { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.checkout-choice { justify-content: flex-start; }
+.checkout-choice strong { margin-left: auto; }
+#review-address { white-space: pre-line; overflow-wrap: anywhere; }
+#review-items { margin-block: 6px 0; padding-left: 18px; }
 .checkout label,.receipt { display: grid; gap: 5px; font-weight: 650; }
 .checkout input,.checkout textarea,.receipt input,.track-form input { min-height: 44px; padding: 7px 10px; border: 1px solid var(--field-line); background: var(--white); color: var(--ink); border-radius: 8px; width: 100%; font-size: 16px; }
 .checkout textarea { min-height: 75px; resize: vertical; }
